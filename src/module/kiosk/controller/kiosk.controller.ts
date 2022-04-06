@@ -2,15 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthRequest } from 'src/common/interface/AuthRequest';
-import { KioskEntity } from 'src/domain/kiosk.entity';
+import { KioskAuthRequest } from 'src/common/interface/AuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
+import { IsAuthorizedWithKioskIdGuard } from '../guard/IsAuthorizedWithKioskId.guard';
 
 // TODO: use guards
 @Controller('kiosk')
@@ -18,34 +20,22 @@ export class KiosksController {
   constructor(private readonly prismaService: PrismaService) {}
 
   @Get(':id')
+  @UseGuards(IsAuthorizedWithKioskIdGuard)
   async findUnique(
-    @Param('id')
-    id: string,
     @Req()
-    req: AuthRequest
+    req: KioskAuthRequest,
   ) {
-    if(id) {
-
-    }
-
-    return this.prismaService.kiosks.findUnique({
-      where: {
-        KioskID: id,
-      },
-    });
+    // kiosk 객체는 `kiosk-auth.middleware.ts` 로 부터 옴
+    return req.kiosk.toObj();
   }
 
   @Post(':id/supply-paper')
+  @UseGuards(IsAuthorizedWithKioskIdGuard)
   async update(
-    @Param('id')
-    id: string,
+    @Req()
+    req: KioskAuthRequest,
   ) {
-    const rel = await this.prismaService.kiosks.findUnique({
-      where: {
-        KioskID: id,
-      },
-    });
-    const kiosk = new KioskEntity(rel);
+    const { kiosk } = req;
     kiosk.supplyPaper();
 
     return this.prismaService.kiosks.update({
@@ -57,16 +47,12 @@ export class KiosksController {
   }
 
   @Post(':id/heartbeat')
+  @UseGuards(IsAuthorizedWithKioskIdGuard)
   async heartbeat(
-    @Param('id')
-    id: string,
+    @Req()
+    req: KioskAuthRequest,
   ) {
-    const rel = await this.prismaService.kiosks.findUnique({
-      where: {
-        KioskID: id,
-      },
-    });
-    const kiosk = new KioskEntity(rel);
+    const { kiosk } = req;
     kiosk.heartbeat();
 
     return this.prismaService.kiosks.update({

@@ -5,8 +5,10 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import { KioskAuthRequest } from 'src/common/interface/AuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
 
 // TODO: use guards
@@ -19,8 +21,25 @@ export class PrintController {
   async findOneWithVerifyNumber(
     @Param('verifyNumber')
     verifyNumber: string,
+    @Req()
+    req: KioskAuthRequest,
   ) {
-    // this.prismaService.printJobs.findMany('')
+    const { kiosk } = req;
+    const printJobs = await this.prismaService.printJobs.findMany({
+      where: {
+        KioskID: kiosk.toObj().KioskID,
+        VerificationNumber: verifyNumber,
+      },
+      include: {
+        Files: {
+          include: {
+            FilesConverted: true,
+          },
+        },
+        Users: true,
+        Kiosks: true,
+      },
+    });
   }
 
   @Post(':verifyNumber/complete')

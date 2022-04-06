@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { KioskEntity } from 'src/domain/kiosk.entity';
 
 export enum ClaimType {
   Client = 'client',
@@ -9,4 +10,8 @@ export enum ClaimType {
 
 export interface AuthRequest extends Request {
   claims?: { uid: string | undefined; type: ClaimType | undefined };
+}
+
+export interface KioskAuthRequest extends AuthRequest {
+  kiosk: KioskEntity;
 }
