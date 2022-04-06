@@ -5,8 +5,10 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import { AuthRequest } from 'src/common/interface/AuthRequest';
 import { KioskEntity } from 'src/domain/kiosk.entity';
 import { PrismaService } from 'src/service/prisma.service';
 
@@ -19,7 +21,13 @@ export class KiosksController {
   async findUnique(
     @Param('id')
     id: string,
+    @Req()
+    req: AuthRequest
   ) {
+    if(id) {
+
+    }
+
     return this.prismaService.kiosks.findUnique({
       where: {
         KioskID: id,
