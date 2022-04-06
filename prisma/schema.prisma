@@ -144,7 +144,7 @@ model PrintJobs {
   UserID              String                @db.VarChar(45)
   FileID              String                @db.VarChar(64)
   NumPrintPages       Int?                  @db.UnsignedInt
-  VerificationNumber  String                @db.VarChar(45)
+  VerificationNumber  String                @db.VarChar(10)
   NumCopies           Int                   @db.UnsignedInt
   PageFitting         String                @db.VarChar(20)
   Duplex              String                @db.VarChar(20)
@@ -229,9 +229,9 @@ model Merchants {
 }
 
 model KioskMaintenanceGroups {
-  KioskMaintenanceGroupID String   @id @db.VarChar(64)
+  KioskMaintenanceGroupID String   @id @db.Char(64)
   Name                    String   @db.VarChar(100)
-  Description             String?  @db.VarChar(100)
-  MerchantID              String?  @db.VarChar(100)
+  Description             String   @db.VarChar(100)
+  MerchantID              String   @db.VarChar(64)
   Kiosks                  Kiosks[]
 }

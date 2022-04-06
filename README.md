@@ -33,4 +33,16 @@ Prisma library 의존성이 service layer 로 전염됨.
 
 ... 작성중
 
+### Model (Domain Model)
+
+Domain model 에서는 모델 단위의 비즈니스 로직을 처리합니다.
+
+저희 Domain Model 에서는 Dto 를 생성하는 역할도 맡고있습니다.
+DDD 에서의 Domain Model 은 순수한 상태이고 
+다른 모듈에 대해 모르는 상태로 독립되어야 한다고 하지만 저희는 그렇지 않습니다.
+하지만 Dto 를 생성하는 역할을 갖는다고 한들 다른 모듈에 Domain Model 을 이식하더라도 코드를 삭제하기만 하면 되기 때문에 그닥 문제가 되지 않습니다.
+오히려 작업하기 편리합니다. 
+
+
+
 

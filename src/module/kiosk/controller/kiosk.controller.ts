@@ -7,34 +7,65 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { KioskDto } from '../dto/kiosk.dto';
+import { KioskEntity } from 'src/domain/kiosk.entity';
+import { PrismaService } from 'src/service/prisma.service';
 
 // TODO: use guards
-@Controller()
+@Controller('kiosk')
 export class KiosksController {
-  // TODO: Add service
-  constructor() {
-    console.log(`Constructed`);
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   @Get(':id')
   async findUnique(
     @Param('id')
     id: string,
   ) {
-    // TODO: implement controller with service
+    return this.prismaService.kiosks.findUnique({
+      where: {
+        KioskID: id,
+      },
+    });
   }
 
-  @Put()
-  async update(@Body() kioskDto: KioskDto) {
-    // TODO: implement controller with service
+  @Post(':id/supply-paper')
+  async update(
+    @Param('id')
+    id: string,
+  ) {
+    const rel = await this.prismaService.kiosks.findUnique({
+      where: {
+        KioskID: id,
+      },
+    });
+    const kiosk = new KioskEntity(rel);
+    kiosk.supplyPaper();
+
+    return this.prismaService.kiosks.update({
+      where: {
+        KioskID: kiosk.toObj().KioskID,
+      },
+      data: kiosk.toObj(),
+    });
   }
 
-  @Post('heartbeat/:id')
+  @Post(':id/heartbeat')
   async heartbeat(
     @Param('id')
     id: string,
   ) {
-    // TODO: implement controller with service
+    const rel = await this.prismaService.kiosks.findUnique({
+      where: {
+        KioskID: id,
+      },
+    });
+    const kiosk = new KioskEntity(rel);
+    kiosk.heartbeat();
+
+    return this.prismaService.kiosks.update({
+      where: {
+        KioskID: kiosk.toObj().KioskID,
+      },
+      data: kiosk.toObj(),
+    });
   }
 }
