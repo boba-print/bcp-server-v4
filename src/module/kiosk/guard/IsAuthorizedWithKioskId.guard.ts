@@ -18,7 +18,6 @@ export class IsAuthorizedWithKioskIdGuard implements CanActivate {
     }
 
     const { kiosk } = req;
-
-    return kiosk.toObj().KioskID === id;
+    return kiosk.KioskID === id;
   }
 }

@@ -26,7 +26,7 @@ export class KiosksController {
     req: KioskAuthRequest,
   ) {
     // kiosk 객체는 `kiosk-auth.middleware.ts` 로 부터 옴
-    return req.kiosk.toObj();
+    return req.kiosk;
   }
 
   @Post(':id/supply-paper')
@@ -36,13 +36,14 @@ export class KiosksController {
     req: KioskAuthRequest,
   ) {
     const { kiosk } = req;
-    kiosk.supplyPaper();
+    // 용지 채우기
+    kiosk.NumRemainPaper = kiosk.PaperTrayCapacity;
 
     return this.prismaService.kiosks.update({
       where: {
-        KioskID: kiosk.toObj().KioskID,
+        KioskID: kiosk.KioskID,
       },
-      data: kiosk.toObj(),
+      data: kiosk,
     });
   }
 
@@ -53,13 +54,14 @@ export class KiosksController {
     req: KioskAuthRequest,
   ) {
     const { kiosk } = req;
-    kiosk.heartbeat();
+    // 현재 시각을 마지막 연결 시각으로 설정
+    kiosk.LastConnectedAt = new Date();
 
     return this.prismaService.kiosks.update({
       where: {
-        KioskID: kiosk.toObj().KioskID,
+        KioskID: kiosk.KioskID,
       },
-      data: kiosk.toObj(),
+      data: kiosk,
     });
   }
 }

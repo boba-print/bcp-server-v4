@@ -25,10 +25,13 @@ export class PrintController {
     req: KioskAuthRequest,
   ) {
     const { kiosk } = req;
+
+    // 키오스크의 인증번호에 해당하는 printJob들과 해당하는 파일들을 가져온다.
     const printJobs = await this.prismaService.printJobs.findMany({
       where: {
-        KioskID: kiosk.toObj().KioskID,
+        KioskID: kiosk.KioskID,
         VerificationNumber: verifyNumber,
+        IsDeleted: 0,
       },
       include: {
         Files: {
@@ -40,13 +43,28 @@ export class PrintController {
         Kiosks: true,
       },
     });
+    return printJobs;
   }
 
   @Post(':verifyNumber/complete')
   async complete(
     @Param('verifyNumber')
     verifyNumber: string,
+    @Req()
+    req: KioskAuthRequest,
   ) {
-    // TODO: implement controller with service
+    const { kiosk } = req;
+
+    // 해당하는 printJob 을 쿼리한다.
+    const printJobs = await this.prismaService.printJobs.findMany({
+      select: {
+        PrintJobID: true,
+      },
+      where: {
+        KioskID: kiosk.KioskID,
+        VerificationNumber: verifyNumber,
+        IsDeleted: 0,
+      },
+    });
   }
 }

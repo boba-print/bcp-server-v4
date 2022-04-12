@@ -1,5 +1,5 @@
+import { Kiosks } from '@prisma/client';
 import { Request } from 'express';
-import { KioskEntity } from 'src/domain/kiosk.entity';
 
 export enum ClaimType {
   Client = 'client',
@@ -13,5 +13,5 @@ export interface AuthRequest extends Request {
 }
 
 export interface KioskAuthRequest extends AuthRequest {
-  kiosk: KioskEntity;
+  kiosk: Kiosks;
 }

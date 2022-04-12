@@ -1,6 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
-import { KioskEntity } from 'src/domain/kiosk.entity';
 import { PrismaService } from 'src/service/prisma.service';
 import { AuthRequest } from '../../common/interface/AuthRequest';
 
@@ -23,7 +22,7 @@ export class KioskAuthMiddleware implements NestMiddleware {
       return res.sendStatus(403).send({});
     }
 
-    res['kiosk'] = new KioskEntity(kiosk);
+    res['kiosk'] = kiosk;
     next();
   }
 }
