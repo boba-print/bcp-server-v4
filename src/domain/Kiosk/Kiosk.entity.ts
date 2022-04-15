@@ -1,4 +1,5 @@
 import { PrintJobEntity } from '../PrintJob/PrintJob.entity';
+import { UserEntity } from '../User/User.entity';
 
 export interface KioskProps {
   KioskID: string;
@@ -42,7 +43,7 @@ export class KioskEntity {
 
     let priceToCharge: number;
     // 1. 컬러 흑백 모두 지원
-    if (PriceA4Mono >= 0 && PriceA4Color >= 0) {
+    if (typeof PriceA4Mono === 'number' && typeof PriceA4Color === 'number') {
       if (printJob.props.IsColor) {
         priceToCharge = PriceA4Color;
       } else {
@@ -50,11 +51,11 @@ export class KioskEntity {
       }
     }
     // 2. 흑백 지원
-    else if (PriceA4Mono >= 0) {
+    else if (typeof PriceA4Mono === 'number') {
       priceToCharge = PriceA4Mono;
     }
     // 3. 컬러 지원
-    else if (PriceA4Color >= 0) {
+    else if (typeof PriceA4Color === 'number') {
       priceToCharge = PriceA4Color;
     }
     // 4. 둘 다 지원 안함
@@ -69,6 +70,16 @@ export class KioskEntity {
     const priceToCharge = this.getPriceToCharge(printJob);
     const { NumPrintPages } = printJob.props;
 
+    if (!NumPrintPages) {
+      throw new Error('NumPrintPage is invalid');
+    }
+
     return priceToCharge * NumPrintPages;
+  }
+
+  checkout(price: number, user: UserEntity) {
+    const { Points } = user.props;
+
+    
   }
 }

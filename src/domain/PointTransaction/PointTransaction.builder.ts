@@ -1,8 +1,10 @@
 import { PointTransactions, Users } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Context } from './Context.enum';
+import { instanceToPlain } from 'class-transformer';
+import { PointTransactionEntity, PointTransactionProps } from './PointTransaction.entity';
 
-export class PointTransactionBuilder implements PointTransactions {
+export class PointTransactionBuilder implements PointTransactionProps {
   PointTransactionID: string;
   CreatedAt: Date;
   CardTransactionID: string | null;
@@ -37,5 +39,10 @@ export class PointTransactionBuilder implements PointTransactions {
   setRemainingPoint(remainingPoint: number) {
     this.RemainingPoint = remainingPoint;
     return this;
+  }
+
+  build() {
+    const props = instanceToPlain(this) as PointTransactionProps;
+    return new PointTransactionEntity(props);
   }
 }
