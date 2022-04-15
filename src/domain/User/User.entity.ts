@@ -1,5 +1,3 @@
-import { PrintJobEntity } from "../PrintJob/PrintJob.entity";
-
 export interface UserProps {
   UserID: string;
   CreatedAt: Date;
@@ -20,9 +18,5 @@ export class UserEntity {
   props: UserProps;
   constructor(props: UserProps) {
     this.props = props;
-  }
-  
-  purchasePrintJob(printJob: PrintJobEntity) {
-    
   }
 }
