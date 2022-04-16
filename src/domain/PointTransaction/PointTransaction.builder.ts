@@ -1,8 +1,10 @@
-import { PointTransactions, Users } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Context } from './Context.enum';
 import { instanceToPlain } from 'class-transformer';
-import { PointTransactionEntity, PointTransactionProps } from './PointTransaction.entity';
+import {
+  PointTransactionEntity,
+  PointTransactionProps,
+} from './PointTransaction.entity';
 
 export class PointTransactionBuilder implements PointTransactionProps {
   PointTransactionID: string;

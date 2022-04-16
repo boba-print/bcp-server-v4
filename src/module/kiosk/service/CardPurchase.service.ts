@@ -1,13 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import { CardTransactionBuilder } from 'src/domain/CardTransaction/CardTransaction.builder';
 import { UserEntity } from 'src/domain/User/User.entity';
+
+type IamportResponse = {
+  code: number;
+  message: string;
+  response: {
+    imp_uid: string;
+    receipt_url: string;
+  };
+};
 
 @Injectable()
 export class CardPurchaseService {
   private iamport = axios.create({
     baseURL: 'https://api.iamport.kr',
     timeout: 5000,
-    headers: { 'X-Custom-Header': 'foobar' },
   });
   private imp_key = process.env.IAMPORT_KEY;
   private imp_secret = process.env.IAMPORT_SECRET;
@@ -34,20 +43,35 @@ export class CardPurchaseService {
 
   async purchase(price: number, user: UserEntity) {
     await this.refreshTokenWhenExpired();
+
     const card = user.selectCard();
     const body = {
       customer_uid: card.BillingKey,
       amount: price,
-      name: 'Boba Print Server v4',
+      name: 'Boba Cloud Print Server v4',
       buyer_name: user.props.Name,
       buyer_email: user.props.Email,
       buyer_tel: user.props.PhoneNumber,
     };
-    await this.iamport.post('/subscribe/payments/again', body, {
-      headers: {
-        Authorization: this.access_token as string,
+
+    const { data } = await this.iamport.post<IamportResponse>(
+      '/subscribe/payments/again',
+      body,
+      {
+        headers: {
+          Authorization: this.access_token as string,
+        },
       },
-    });
+    );
+
+    return new CardTransactionBuilder()
+      .setAmount(price)
+      .setCardId(card.CardID)
+      .setRejectedReason(data.code !== 0 ? data.message : null)
+      .setIamportUid(data.response.imp_uid)
+      .setReceiptUrl(data.response.receipt_url)
+      .setUserId(user.props.UserID)
+      .build();
   }
 }
 export const cardPurchaseService = new CardPurchaseService();
