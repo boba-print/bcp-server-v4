@@ -10,12 +10,14 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { prependOnceListener } from 'process';
 import { KioskAuthRequest } from 'src/common/interface/AuthRequest';
 import { KioskEntity } from 'src/domain/Kiosk/Kiosk.entity';
 import { PrintJobEntity } from 'src/domain/PrintJob/PrintJob.entity';
 import { UserEntity } from 'src/domain/User/User.entity';
 import { PrismaService } from 'src/service/prisma.service';
 import { CardPaymentFailedError } from '../errors';
+import { GCSService } from '../service/GCS.service';
 import { PrintOrderService } from '../service/PrintOrder.service';
 
 // TODO: use guards
@@ -25,6 +27,7 @@ export class PrintController {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly printOrderService: PrintOrderService,
+    private readonly gcsService: GCSService,
   ) {}
 
   @Get(':verifyNumber')
@@ -53,11 +56,30 @@ export class PrintController {
         Kiosks: true,
       },
     });
-    return printJobs;
+    const printJobsDto = printJobs.map(async (props) => ({
+      ...props,
+      Files: {
+        ...props.Files,
+        FilesConverted: {
+          ...props.Files.FilesConverted,
+          Url:
+            props.Files.FilesConverted &&
+            (await this.gcsService.getObjectUrl(
+              props.Files.FilesConverted.ConvertedFileGSPath,
+            )),
+          ThumbnailUrls:
+            props.Files.FilesConverted &&
+            (await this.gcsService.getObjectUrls(
+              props.Files.FilesConverted.ThumbnailsGSPath,
+            )),
+        },
+      },
+    }));
+    return printJobsDto;
   }
 
-  @Post(':verifyNumber/complete')
-  async complete(
+  @Post(':verifyNumber/checkout')
+  async checkout(
     @Param('verifyNumber')
     verifyNumber: string,
     @Req()

@@ -7,11 +7,13 @@ import { KiosksController } from './controller/kiosk.controller';
 import { PrintController } from './controller/print.controller';
 import { IsAuthorizedWithKioskIdGuard } from './guard/IsAuthorizedWithKioskId.guard';
 import { PrintOrderService } from './service/PrintOrder.service';
+import { GCSService } from './service/GCS.service';
 @Module({
   controllers: [KiosksController, PrintController],
   providers: [
     PrismaService,
     PrintOrderService,
+    GCSService,
     {
       provide: APP_GUARD,
       useClass: IsAuthorizedWithKioskIdGuard,
