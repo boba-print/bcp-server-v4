@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { CardTransactionBuilder } from 'src/domain/CardTransaction/CardTransaction.builder';
 import { UserEntity } from 'src/domain/User/User.entity';
+import { CardPaymentFailedError } from '../errors';
 
 type IamportResponse = {
   code: number;
@@ -73,6 +74,7 @@ export class CardPurchaseService {
       buyer_tel: user.props.PhoneNumber,
     };
 
+    // 100원 이상 금액으로 결제
     const { data } = await this.iamport.post<IamportResponse>(
       '/subscribe/payments/again',
       body,
@@ -82,6 +84,11 @@ export class CardPurchaseService {
         },
       },
     );
+
+    // 만약 결제 실패한 경우
+    if (data.code !== 0) {
+      throw new CardPaymentFailedError(data.message, card);
+    }
 
     let refundData: IamportResponse | null = null;
     if (toRefund !== 0) {
@@ -103,20 +110,12 @@ export class CardPurchaseService {
 
     const builder = new CardTransactionBuilder();
     builder
+      .setCreatedAt(new Date(data.response.paid_at * 1000))
       .setAmount(price)
       .setCardId(card.CardID)
-      .setRejectedReason(data.code !== 0 ? data.message : null)
-      .setUserId(user.props.UserID);
-
-    if (data.code === 0) {
-      // 정상 결제이면 결제 정보를 저장한다.
-      builder
-        .setCreatedAt(
-          new Date((data.response.paid_at || data.response.failed_at) * 1000),
-        )
-        .setIamportUid(data.response.imp_uid)
-        .setReceiptUrl(data.response.receipt_url);
-    }
+      .setUserId(user.props.UserID)
+      .setIamportUid(data.response.imp_uid)
+      .setReceiptUrl(data.response.receipt_url);
 
     if (refundData) {
       builder

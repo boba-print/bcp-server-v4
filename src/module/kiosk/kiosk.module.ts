@@ -6,10 +6,12 @@ import { PrismaService } from 'src/service/prisma.service';
 import { KiosksController } from './controller/kiosk.controller';
 import { PrintController } from './controller/print.controller';
 import { IsAuthorizedWithKioskIdGuard } from './guard/IsAuthorizedWithKioskId.guard';
+import { PrintOrderService } from './service/PrintOrder.service';
 @Module({
   controllers: [KiosksController, PrintController],
   providers: [
     PrismaService,
+    PrintOrderService,
     {
       provide: APP_GUARD,
       useClass: IsAuthorizedWithKioskIdGuard,

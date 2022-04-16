@@ -28,4 +28,13 @@ export class PrintJobEntity {
   constructor(props: PrintJobProps) {
     this.props = props;
   }
+
+  setIsDeleted() {
+    this.props.IsDeleted = 1;
+  }
+
+  toData() {
+    const { Files, Kiosks, ...rest } = this.props;
+    return rest;
+  }
 }

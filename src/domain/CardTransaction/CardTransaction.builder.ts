@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { CardTransactionProps } from './CardTransaction.entity';
+import { CardTransactionEntity, CardTransactionProps } from './CardTransaction.entity';
 
 export class CardTransactionBuilder {
   props: Partial<CardTransactionProps>;

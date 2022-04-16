@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Context } from 'src/domain/PointTransaction/Context.enum';
 import { PointTransactionBuilder } from 'src/domain/PointTransaction/PointTransaction.builder';
-import { PointTransactionEntity } from 'src/domain/PointTransaction/PointTransaction.entity';
 import { UserEntity } from 'src/domain/User/User.entity';
 
 @Injectable()
-class PointPurchaseService {
+export class PointPurchaseService {
   purchase(price: number, user: UserEntity) {
     if (price > user.props.Points) {
       // 유저의 포인트가 더 많으면 throw

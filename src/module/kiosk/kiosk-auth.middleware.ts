@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { HttpException, Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { PrismaService } from 'src/service/prisma.service';
 import { AuthRequest } from '../../common/interface/AuthRequest';
@@ -9,8 +9,9 @@ export class KioskAuthMiddleware implements NestMiddleware {
 
   async use(req: AuthRequest, res: Response, next: NextFunction) {
     const { claims } = req;
+
     if (!claims || !claims.uid) {
-      return res.sendStatus(403).send({});
+      throw new HttpException('Forbidden', 403);
     }
     const { uid } = claims;
     const kiosk = await this.prismaService.kiosks.findUnique({
@@ -19,7 +20,7 @@ export class KioskAuthMiddleware implements NestMiddleware {
       },
     });
     if (!kiosk) {
-      return res.sendStatus(403).send({});
+      throw new HttpException('Forbidden', 403);
     }
 
     res['kiosk'] = kiosk;

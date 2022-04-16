@@ -1,5 +1,7 @@
 import { cardPurchaseService } from 'src/module/kiosk/service/CardPurchase.service';
 import { pointPurchaseService } from 'src/module/kiosk/service/PointPurchase.service';
+import { CardTransactionEntity } from '../CardTransaction/CardTransaction.entity';
+import { PointTransactionEntity } from '../PointTransaction/PointTransaction.entity';
 import { PrintJobEntity } from '../PrintJob/PrintJob.entity';
 import { UserEntity } from '../User/User.entity';
 
@@ -79,24 +81,25 @@ export class KioskEntity {
     return priceToCharge * NumPrintPages;
   }
 
-  checkout(printJobs: PrintJobEntity[], user: UserEntity) {
+  async checkout(printJobs: PrintJobEntity[], user: UserEntity) {
     const price = printJobs.reduce((p, c) => p + this.getPrice(c), 0);
 
     /** 유저가 갖고있는 포인트가 결제 금액보다 더 많다면 모두 결제
      *  유저가 갖고있는 포인트가 적다면 갖고있는 포인트만큼만 결제
      * */
-    const pointToUse = user.props.Points > price ? price : user.props.Points;
-    const pointTransaction = pointPurchaseService.purchase(pointToUse, user);
+    const pointAmount = user.props.Points > price ? price : user.props.Points;
+    const cardAmount = price - pointAmount;
 
-    const remainPrice = price - pointToUse;
-    if (remainPrice === 0) {
-      return {
-        pointTransaction,
-        cardTransaction: null,
-      };
+    let cardTransaction: CardTransactionEntity | null = null;
+    if (cardAmount !== 0) {
+      cardTransaction = await cardPurchaseService.purchase(cardAmount, user);
     }
 
-    const cardTransaction = cardPurchaseService.purchase(remainPrice, user);
+    let pointTransaction: PointTransactionEntity | null = null;
+    if (pointAmount !== 0) {
+      pointTransaction = pointPurchaseService.purchase(pointAmount, user);
+    }
+
     return {
       pointTransaction,
       cardTransaction,
