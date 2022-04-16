@@ -1,3 +1,5 @@
+import { cardPurchaseService } from 'src/module/kiosk/service/CardPurchase.service';
+import { pointPurchaseService } from 'src/module/kiosk/service/PointPurchase.service';
 import { PrintJobEntity } from '../PrintJob/PrintJob.entity';
 import { UserEntity } from '../User/User.entity';
 
@@ -77,9 +79,27 @@ export class KioskEntity {
     return priceToCharge * NumPrintPages;
   }
 
-  checkout(price: number, user: UserEntity) {
-    const { Points } = user.props;
+  checkout(printJobs: PrintJobEntity[], user: UserEntity) {
+    const price = printJobs.reduce((p, c) => p + this.getPrice(c), 0);
 
-    
+    /** 유저가 갖고있는 포인트가 결제 금액보다 더 많다면 모두 결제
+     *  유저가 갖고있는 포인트가 적다면 갖고있는 포인트만큼만 결제
+     * */
+    const pointToUse = user.props.Points > price ? price : user.props.Points;
+    const pointTransaction = pointPurchaseService.purchase(pointToUse, user);
+
+    const remainPrice = price - pointToUse;
+    if (remainPrice === 0) {
+      return {
+        pointTransaction,
+        cardTransaction: null,
+      };
+    }
+
+    const cardTransaction = cardPurchaseService.purchase(remainPrice, user);
+    return {
+      pointTransaction,
+      cardTransaction,
+    };
   }
 }

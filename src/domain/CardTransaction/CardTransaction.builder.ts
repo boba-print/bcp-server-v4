@@ -1,5 +1,5 @@
-import { CardTransactionProps } from './CardTransaction.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { CardTransactionProps } from './CardTransaction.entity';
 
 export class CardTransactionBuilder {
   props: Partial<CardTransactionProps>;
@@ -11,8 +11,23 @@ export class CardTransactionBuilder {
     this.props.RejectedReason = null;
   }
 
+  setCreatedAt(createdAt: Date) {
+    this.props.CreatedAt = createdAt;
+    return this;
+  }
+
   setAmount(amount: number) {
     this.props.Amount = amount;
+    return this;
+  }
+
+  setCanceledAmount(amount: number) {
+    this.props.CanceledAmount = amount;
+    return this;
+  }
+
+  setCanceledAt(canceledAt: Date) {
+    this.props.CanceledAt = canceledAt;
     return this;
   }
 
@@ -43,6 +58,6 @@ export class CardTransactionBuilder {
   }
 
   build() {
-    return { ...this.props } as CardTransactionProps;
+    return new CardTransactionEntity(this.props as CardTransactionProps);
   }
 }
