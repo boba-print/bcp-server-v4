@@ -31,7 +31,7 @@ export class PrintController {
   ) {}
 
   @Get(':verifyNumber')
-  async findOneWithVerifyNumber(
+  async findManyWithVerifyNumber(
     @Param('verifyNumber')
     verifyNumber: string,
     @Req()
@@ -56,25 +56,33 @@ export class PrintController {
         Kiosks: true,
       },
     });
-    const printJobsDto = printJobs.map(async (props) => ({
-      ...props,
-      Files: {
-        ...props.Files,
-        FilesConverted: {
-          ...props.Files.FilesConverted,
-          Url:
-            props.Files.FilesConverted &&
-            (await this.gcsService.getObjectUrl(
-              props.Files.FilesConverted.ConvertedFileGSPath,
-            )),
-          ThumbnailUrls:
-            props.Files.FilesConverted &&
-            (await this.gcsService.getObjectUrls(
-              props.Files.FilesConverted.ThumbnailsGSPath,
-            )),
+    // console.log(printJobs);
+    const printJobsDto = await Promise.all(
+      printJobs.map(async (props) => ({
+        ...props,
+        Files: {
+          ...props.Files,
+          FilesConverted: {
+            ...props.Files.FilesConverted,
+            Url:
+              props.Files.FilesConverted &&
+              (await this.gcsService.getObjectUrl(
+                new URL(props.Files.FilesConverted.ConvertedFileGSPath),
+              )),
+            ThumbnailUrls:
+              props.Files.FilesConverted &&
+              (await this.gcsService.getObjectUrls(
+                new URL(props.Files.FilesConverted.ThumbnailsGSPath),
+              )),
+          },
         },
-      },
-    }));
+        Users: {
+          ...props.Users,
+          StorageAllocated: Number(props.Users.StorageAllocated),
+          StorageUsed: Number(props.Users.StorageUsed),
+        },
+      })),
+    );
     return printJobsDto;
   }
 

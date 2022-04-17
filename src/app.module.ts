@@ -1,4 +1,3 @@
-import './util/init';
 import {
   MiddlewareConsumer,
   Module,

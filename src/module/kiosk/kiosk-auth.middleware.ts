@@ -14,16 +14,18 @@ export class KioskAuthMiddleware implements NestMiddleware {
       throw new HttpException('Forbidden', 403);
     }
     const { uid } = claims;
+
     const kiosk = await this.prismaService.kiosks.findUnique({
       where: {
         KioskID: uid,
       },
     });
+
     if (!kiosk) {
       throw new HttpException('Forbidden', 403);
     }
 
-    res['kiosk'] = kiosk;
+    req['kiosk'] = kiosk;
     next();
   }
 }

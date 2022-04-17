@@ -33,4 +33,12 @@ export class UserEntity {
     const sorted = Cards.sort((a, b) => a.Priority - b.Priority);
     return sorted[0];
   }
+
+  toDto() {
+    return {
+      ...this.props,
+      StorageAllocated: Number(this.props.StorageAllocated),
+      StorageUsed: Number(this.props.StorageUsed),
+    };
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { HttpException, Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 
@@ -18,13 +18,8 @@ export class PreauthMiddleware implements NestMiddleware {
       req['claims'] = decodedToken;
       next();
     } catch (err) {
-      console.info('Access Denied');
-      res.status(403).json({
-        statusCode: 403,
-        timestamp: new Date().toISOString(),
-        path: req.url,
-        message: 'Access Denied',
-      });
+      console.info(err.message);
+      throw new HttpException('Token decoding error', 403);
     }
   }
 }
