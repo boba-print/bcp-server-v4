@@ -56,7 +56,7 @@ export class PrintController {
         Kiosks: true,
       },
     });
-    // console.log(printJobs);
+    
     const printJobsDto = await Promise.all(
       printJobs.map(async (props) => ({
         ...props,
