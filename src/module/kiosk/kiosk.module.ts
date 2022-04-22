@@ -24,7 +24,7 @@ export class KioskModule {
   // 키오스크 객체를 req 에 담아서 가져온다
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(KioskAuthMiddleware).forRoutes({
-      path: '*',
+      path: '/kiosk/*',
       method: RequestMethod.ALL,
     });
   }

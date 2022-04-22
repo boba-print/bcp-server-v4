@@ -11,6 +11,8 @@ import { KioskModule } from './module/kiosk/kiosk.module';
 import { PreauthMiddleware } from './common/middleware/preauth.middleware';
 
 @Module({
+  controllers: [AppController],
+  providers: [AppService],
   imports: [KioskModule],
 })
 export class AppModule implements NestModule {
