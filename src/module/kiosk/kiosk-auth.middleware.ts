@@ -11,6 +11,7 @@ export class KioskAuthMiddleware implements NestMiddleware {
     const { claims } = req;
 
     if (!claims || !claims.uid) {
+      console.log('[KioskAuthMiddleware] There is no claims');
       throw new HttpException('Forbidden', 403);
     }
     const { uid } = claims;
@@ -22,6 +23,7 @@ export class KioskAuthMiddleware implements NestMiddleware {
     });
 
     if (!kiosk) {
+      console.log('[KioskAuthMiddleware] There is no corresponding kiosk');
       throw new HttpException('Forbidden', 403);
     }
 
