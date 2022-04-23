@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { prependOnceListener } from 'process';
-import { KioskAuthRequest } from 'src/common/interface/AuthRequest';
+import { KioskAuthRequest } from 'src/module/kiosk/KioskAuthRequest';
 import { KioskEntity } from 'src/domain/Kiosk/Kiosk.entity';
 import { PrintJobEntity } from 'src/domain/PrintJob/PrintJob.entity';
 import { UserEntity } from 'src/domain/User/User.entity';
@@ -56,7 +56,7 @@ export class PrintController {
         Kiosks: true,
       },
     });
-    
+
     const printJobsDto = await Promise.all(
       printJobs.map(async (props) => ({
         ...props,

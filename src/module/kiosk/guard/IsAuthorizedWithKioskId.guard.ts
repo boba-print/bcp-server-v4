@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { KioskAuthRequest } from '../../../common/interface/AuthRequest';
+import { KioskAuthRequest } from '../KioskAuthRequest';
 
 /**
  * 키오스크 컨트롤러에서 `:id` param 으로 들어오는 값이

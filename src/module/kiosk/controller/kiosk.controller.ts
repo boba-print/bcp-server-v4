@@ -10,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { KioskAuthRequest } from 'src/common/interface/AuthRequest';
+import { KioskAuthRequest } from 'src/module/kiosk/KioskAuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
 import { IsAuthorizedWithKioskIdGuard } from '../guard/IsAuthorizedWithKioskId.guard';
 
