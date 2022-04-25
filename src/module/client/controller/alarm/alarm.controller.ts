@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
-import { PrintOrderService } from 'src/service/print-order/print-order.service';
+import { PrintOrderService } from 'src/module/client/service/print-order/print-order.service';
 import { ClientAuthRequest } from '../../ClientAuthRequest';
 
 @Controller('alarm')

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrintOrders } from '@prisma/client';
 import { NotFoundError } from 'src/common/error';
-import { PrismaService } from '../prisma.service';
-import { PrintOrderEntity } from '../../domain/PrintOrder/PrintOrder.entity';
+import { PrismaService } from '../../../../service/prisma.service';
+import { PrintOrderEntity } from '../../../../domain/PrintOrder/PrintOrder.entity';
 
 @Injectable()
 export class PrintOrderService {
