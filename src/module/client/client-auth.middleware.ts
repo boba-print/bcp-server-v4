@@ -23,7 +23,7 @@ export class ClientAuthMiddleWare implements NestMiddleware {
     });
 
     if (!user) {
-      console.log('[ClientAuthMiddleWare] There is no corresponding kiosk');
+      console.log('[ClientAuthMiddleWare] There is no corresponding user');
       throw new HttpException('Forbidden', 403);
     }
 
