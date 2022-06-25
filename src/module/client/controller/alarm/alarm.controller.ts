@@ -11,7 +11,7 @@ export class AlarmController {
   ) {}
 
   @Get()
-  async getAll(
+  async getRecent(
     @Req()
     req: ClientAuthRequest,
     @Query('n')
