@@ -3,11 +3,13 @@ import { PrintOrderService } from 'src/module/client/service/print-order/print-o
 import { PrismaService } from 'src/service/prisma.service';
 import { ClientAuthRequest } from '../../ClientAuthRequest';
 import { IsAuthorizedWithClientIdGuard } from '../../guard/IsAuthorizedWithClientId.guard';
+import { AlarmService } from '../../service/alarm.service';
 
 @Controller('alarm')
 export class AlarmController {
   constructor(
     private readonly printOrderService: PrintOrderService,
+    private readonly alarmService: AlarmService,
     private readonly prismaService: PrismaService,
   ) {}
 
@@ -30,21 +32,6 @@ export class AlarmController {
       );
       numLimit = 10;
     }
-    const printOrders = await this.printOrderService.findMany(
-      {
-        UserID: user.UserID,
-      },
-      0,
-      numLimit,
-    );
-
-    // 유저가 마지막으로 공지를 읽은 시간을 기록한다.
-    await this.prismaService.users.update({
-      where: { UserID: req.user.UserID },
-      data: {
-        CheckedNoticeAt: new Date(),
-      },
-    });
-    return printOrders.map((po) => po.props);
+    return this.alarmService.getAlarms(user, numLimit);
   }
 }

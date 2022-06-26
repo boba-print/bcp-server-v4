@@ -4,11 +4,13 @@ import { PrismaService } from 'src/service/prisma.service';
 import { ClientAuthMiddleWare } from './client-auth.middleware';
 import { AlarmController } from './controller/alarm/alarm.controller';
 import { IsAuthorizedWithClientIdGuard } from './guard/IsAuthorizedWithClientId.guard';
+import { AlarmService } from './service/alarm.service';
 import { PrintOrderService } from './service/print-order/print-order.service';
 
 @Module({
   controllers: [AlarmController],
   providers: [
+    AlarmService,
     PrismaService,
     PrintOrderService,
     {

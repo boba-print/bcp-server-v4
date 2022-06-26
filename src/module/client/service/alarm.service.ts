@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Users } from '@prisma/client';
+import { AlarmEntity } from 'src/domain/Alarm/Alarm.entity';
 import { PrintOrderService } from 'src/module/client/service/print-order/print-order.service';
 import { PrismaService } from 'src/service/prisma.service';
 
@@ -22,7 +23,12 @@ export class AlarmService {
       numLimit,
     );
 
+    const lastNoticeCheck = user.CheckedNoticeAt ?? new Date(0);
+
     // alarm 형태로 바꾼다.
+    const alarms = printOrders.map(
+      (po) => new AlarmEntity(po, lastNoticeCheck),
+    );
 
     // 유저가 마지막으로 공지를 읽은 시간을 기록한다.
     await this.prismaService.users.update({
@@ -31,6 +37,6 @@ export class AlarmService {
         CheckedNoticeAt: new Date(),
       },
     });
-    return printOrders.map((po) => po.props);
+    return alarms;
   }
 }
