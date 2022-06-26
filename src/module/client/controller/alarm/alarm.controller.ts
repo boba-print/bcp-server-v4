@@ -7,11 +7,7 @@ import { AlarmService } from '../../service/alarm.service';
 
 @Controller('alarm')
 export class AlarmController {
-  constructor(
-    private readonly printOrderService: PrintOrderService,
-    private readonly alarmService: AlarmService,
-    private readonly prismaService: PrismaService,
-  ) {}
+  constructor(private readonly alarmService: AlarmService) {}
 
   @Get()
   async getRecent(
