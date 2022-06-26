@@ -1,12 +1,11 @@
-import {
-  validate,
-  validateOrReject,
-  Contains,
-  IsInt,
-  Length,
-  IsEmail,
-  IsFQDN,
-  IsDate,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsEmail, IsMobilePhone, IsOptional } from 'class-validator';
+
+export class UserExistCheckDto {
+  @IsEmail()
+  @IsOptional()
+  Email?: string;
+
+  @IsMobilePhone()
+  @IsOptional()
+  PhoneNumber?: string;
+}
