@@ -1,7 +1,8 @@
 import axios, { Axios } from 'axios';
 import { Injectable } from '@nestjs/common';
-import { NoEnvVarError } from '../../../error';
+import { InvalidParams, NoEnvVarError } from '../../../error';
 import * as CryptoJS from 'crypto-js';
+import { phone } from 'phone';
 
 @Injectable()
 export class NaverSmsService {
@@ -41,7 +42,13 @@ export class NaverSmsService {
     });
   }
 
-  async sendMessage(content, phoneNumber) {
+  /**
+   * 헤당 휴대폰 번호로 문자메시지를 전송합니다.
+   * @param content : 문자 메시지 내용
+   * @param phoneNumber : 문자를 보낼 휴대전화번호
+   * @returns Naver Cloud API response body
+   */
+  async sendMessage(content: string, phoneNumber: string) {
     const body = this.buildSendMessageBody(content, phoneNumber);
     const payload = JSON.stringify(body);
     const timestamp = Date.now();
@@ -64,7 +71,7 @@ export class NaverSmsService {
     return response.data;
   }
 
-  buildSignature(timestamp) {
+  private buildSignature(timestamp) {
     const space = ' '; // one space
     const newLine = '\n'; // new line
     const method = 'POST'; // method
@@ -87,23 +94,47 @@ export class NaverSmsService {
     return hash.toString(CryptoJS.enc.Base64);
   }
 
-  buildSendMessageBody(content, phoneNumber) {
+  private buildSendMessageBody(content, phoneNumber) {
+    const countryCode = this.parseCountryCode(phoneNumber);
+    const to = phoneNumber;
     return {
       type: 'SMS',
       contentType: 'COMM',
-      countryCode: '82',
+      countryCode,
       from: this.senderPhoneNumber,
       content,
       messages: [
         {
-          to: phoneNumber,
+          to,
           content,
         },
       ],
     };
   }
 
-  buildSmsSendUrl() {
+  private buildSmsSendUrl() {
     return `https://sens.apigw.ntruss.com/sms/v2/services/${this.smsServiceId}/messages`;
+  }
+
+  /**
+   * E.164 포멧의 휴대폰 번호에서 지역코드를 파싱함
+   */
+  private parseCountryCode(phoneNumber: string) {
+    const result = phone(phoneNumber);
+    if (!result || !result.isValid) {
+      throw new InvalidParams('phone number is not E.164 format');
+    }
+    return result.countryCode.replace('+', '');
+  }
+
+  /**
+   * E.164 포멧의 휴대폰 번호에서 010 으로 시작되는 휴대폰 번호 생성
+   */
+  private buildPlainPhoneNumber(phoneNumber: string) {
+    const result = phone(phoneNumber);
+    if (!result || !result.isValid) {
+      throw new InvalidParams('phone number is not E.164 format');
+    }
+    return '0' + phoneNumber.replace(result.countryCode, ''); // 지역 코드를 없애고 앞에 0 을 붙임.
   }
 }
