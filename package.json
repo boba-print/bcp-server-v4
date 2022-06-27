@@ -27,9 +27,12 @@
     "@nestjs/passport": "^8.2.1",
     "@nestjs/platform-express": "^8.0.0",
     "@prisma/client": "^3.12.0",
+    "@types/crypto-js": "^4.1.1",
     "@types/passport-local": "^1.0.34",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.1",
     "firebase-admin": "^10.0.2",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
@@ -60,6 +63,9 @@
     "typescript": "^4.3.5"
   },
   "jest": {
+    "setupFiles": [
+      "dotenv/config"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",

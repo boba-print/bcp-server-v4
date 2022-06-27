@@ -4,9 +4,7 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
-import { RouterModule } from '@nestjs/core';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { KioskModule } from './module/kiosk/kiosk.module';
 import { PreauthMiddleware } from './common/middleware/preauth.middleware';
 import { ClientModule } from './module/client/client.module';
@@ -14,7 +12,7 @@ import { PublicModule } from './module/public/public.module';
 
 @Module({
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
   imports: [KioskModule, ClientModule, PublicModule],
 })
 export class AppModule implements NestModule {
