@@ -1,10 +1,10 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { KioskAuthMiddleware } from './kiosk-auth.middleware';
+import { KioskAuthMiddleware } from '../../common/middleware/kiosk-auth.middleware';
 import { PrismaService } from 'src/service/prisma.service';
 import { KiosksController } from './controller/kiosk.controller';
 import { PrintController } from './controller/print.controller';
-import { IsAuthorizedWithKioskIdGuard } from './guard/IsAuthorizedWithKioskId.guard';
+import { KioskAuthGuard } from '../../common/guard/KioskAuth.guard';
 import { PrintOrderService } from './service/PrintOrder.service';
 import { GCSService } from './service/GCS.service';
 
@@ -16,7 +16,7 @@ import { GCSService } from './service/GCS.service';
     GCSService,
     {
       provide: APP_GUARD,
-      useClass: IsAuthorizedWithKioskIdGuard,
+      useClass: KioskAuthGuard,
     },
   ],
 })

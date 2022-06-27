@@ -10,9 +10,9 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { KioskAuthRequest } from 'src/module/kiosk/KioskAuthRequest';
+import { KioskAuthRequest } from 'src/common/interface/KioskAuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
-import { IsAuthorizedWithKioskIdGuard } from '../guard/IsAuthorizedWithKioskId.guard';
+import { KioskAuthGuard } from '../../../common/guard/KioskAuth.guard';
 
 // TODO: use guards
 @Controller('kiosk')
@@ -20,7 +20,7 @@ export class KiosksController {
   constructor(private readonly prismaService: PrismaService) {}
 
   @Get(':id')
-  @UseGuards(IsAuthorizedWithKioskIdGuard)
+  @UseGuards(KioskAuthGuard)
   async findUnique(
     @Req()
     req: KioskAuthRequest,
@@ -30,7 +30,7 @@ export class KiosksController {
   }
 
   @Post(':id/supply-paper')
-  @UseGuards(IsAuthorizedWithKioskIdGuard)
+  @UseGuards(KioskAuthGuard)
   async update(
     @Req()
     req: KioskAuthRequest,
@@ -48,7 +48,7 @@ export class KiosksController {
   }
 
   @Post(':id/heartbeat')
-  @UseGuards(IsAuthorizedWithKioskIdGuard)
+  @UseGuards(KioskAuthGuard)
   async heartbeat(
     @Req()
     req: KioskAuthRequest,

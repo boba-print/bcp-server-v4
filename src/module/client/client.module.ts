@@ -1,9 +1,9 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaService } from 'src/service/prisma.service';
-import { ClientAuthMiddleWare } from './client-auth.middleware';
+import { UserAuthMiddleWare } from '../../common/middleware/user-auth.middleware';
 import { AlarmController } from './controller/alarm/alarm.controller';
-import { IsAuthorizedWithClientIdGuard } from './guard/IsAuthorizedWithClientId.guard';
+import { UserAuthGuard } from '../../common/guard/UserAuth.guard';
 import { AlarmService } from './service/alarm.service';
 import { PrintOrderService } from './service/print-order/print-order.service';
 
@@ -15,12 +15,12 @@ import { PrintOrderService } from './service/print-order/print-order.service';
     PrintOrderService,
     {
       provide: APP_GUARD,
-      useClass: IsAuthorizedWithClientIdGuard,
+      useClass: UserAuthGuard,
     },
   ],
 })
 export class ClientModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ClientAuthMiddleWare).forRoutes(AlarmController);
+    consumer.apply(UserAuthMiddleWare).forRoutes(AlarmController);
   }
 }

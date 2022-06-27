@@ -10,5 +10,3 @@ export enum ClaimType {
 export interface AuthRequest extends Request {
   claims?: { uid: string | undefined; type: ClaimType | undefined };
 }
-
-

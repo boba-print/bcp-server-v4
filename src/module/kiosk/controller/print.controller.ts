@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { prependOnceListener } from 'process';
-import { KioskAuthRequest } from 'src/module/kiosk/KioskAuthRequest';
+import { KioskAuthRequest } from 'src/common/interface/KioskAuthRequest';
 import { KioskEntity } from 'src/domain/Kiosk/Kiosk.entity';
 import { PrintJobEntity } from 'src/domain/PrintJob/PrintJob.entity';
 import { UserEntity } from 'src/domain/User/User.entity';

@@ -1,8 +1,8 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { PrintOrderService } from 'src/module/client/service/print-order/print-order.service';
 import { PrismaService } from 'src/service/prisma.service';
-import { ClientAuthRequest } from '../../ClientAuthRequest';
-import { IsAuthorizedWithClientIdGuard } from '../../guard/IsAuthorizedWithClientId.guard';
+import { UserAuthRequest } from '../../../../common/interface/UserAuthRequest';
+import { UserAuthGuard } from '../../../../common/guard/UserAuth.guard';
 import { AlarmService } from '../../service/alarm.service';
 
 @Controller('alarm')
@@ -12,7 +12,7 @@ export class AlarmController {
   @Get()
   async getRecent(
     @Req()
-    req: ClientAuthRequest,
+    req: UserAuthRequest,
     @Query('n')
     n: string,
   ) {
