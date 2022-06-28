@@ -16,7 +16,7 @@ export class PhoneAuthSessionService {
    */
   async sendSms(phoneNumber: string) {
     const verifyNumber = this.generateRandomVerifyNumber();
-    await this.prismaService.phoneAuthSession.create({
+    const session = await this.prismaService.phoneAuthSession.create({
       data: {
         PhoneAuthSessionID: uuidv4(),
         CreatedAt: new Date(),
@@ -27,6 +27,8 @@ export class PhoneAuthSessionService {
 
     const content = this.buildSmsText(verifyNumber);
     await this.naverSmsService.sendMessage(content, phoneNumber);
+
+    return session;
   }
 
   /**
