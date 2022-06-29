@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { PhoneAuthSessionService } from '../phone-auth-session.service';
 import { NaverSmsService } from '../naver-sms.service'; 
 
-describe('CatsController', () => {
+describe('PhoneAuthSessionService', () => {
   let phoneAuthSessionService: PhoneAuthSessionService;
 
   beforeEach(async () => {
@@ -14,14 +14,5 @@ describe('CatsController', () => {
     phoneAuthSessionService = moduleRef.get<PhoneAuthSessionService>(
       PhoneAuthSessionService,
     );
-  });
-
-  describe('', () => {
-    it('should return an array of cats', async () => {
-      const result = ['test'];
-      jest.spyOn(catsService, 'findAll').mockImplementation(() => result);
-
-      expect(await catsController.findAll()).toBe(result);
-    });
   });
 });
