@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 
@@ -16,10 +16,9 @@ export class PreauthMiddleware implements NestMiddleware {
         .verifyIdToken(token.replace('Bearer ', ''));
       // TODO: 안전한 Typing 을 위한 더 나은 방법?
       req['claims'] = decodedToken;
-      next();
+      return next();
     } catch (err) {
-      console.info(err.message);
-      throw new HttpException('Token decoding error', 403);
+      return next();
     }
   }
 }

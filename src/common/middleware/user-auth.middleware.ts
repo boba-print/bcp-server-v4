@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { PrismaService } from 'src/service/prisma.service';
 import { AuthRequest } from '../interface/AuthRequest';
@@ -11,8 +11,7 @@ export class UserAuthMiddleWare implements NestMiddleware {
     const { claims } = req;
 
     if (!claims || !claims.uid) {
-      console.log('[UserAuthMiddleWare] There is no claims');
-      throw new HttpException('Forbidden', 403);
+      return next();
     }
     const { uid } = claims;
 
@@ -22,12 +21,7 @@ export class UserAuthMiddleWare implements NestMiddleware {
       },
     });
 
-    if (!user) {
-      console.log('[UserAuthMiddleWare] There is no corresponding user');
-      throw new HttpException('Forbidden', 403);
-    }
-
-    req['user'] = user;
+    req['user'] = user ?? undefined;
     next();
   }
 }

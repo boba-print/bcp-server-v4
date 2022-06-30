@@ -18,6 +18,10 @@ export class UserAuthGuard implements CanActivate {
     }
 
     const { user } = req;
+    if (!user) {
+      return false;
+    }
+
     return user.UserID === id;
   }
 }
