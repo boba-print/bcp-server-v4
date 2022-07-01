@@ -10,11 +10,12 @@ import { PreauthMiddleware } from './common/middleware/preauth.middleware';
 import { ClientModule } from './module/client/client.module';
 import { PublicModule } from './module/public/public.module';
 import { UserModule } from './module/user/user.module';
+import { NoticesModule } from './module/notice/notice.module';
 
 @Module({
   controllers: [AppController],
   providers: [],
-  imports: [KioskModule, ClientModule, PublicModule, UserModule],
+  imports: [KioskModule, ClientModule, PublicModule, UserModule, NoticesModule],
 })
 export class AppModule implements NestModule {
   // Firebase auth 를 통해 user uid (또는 kiosk uid 를 얻기 위한 미들웨어)

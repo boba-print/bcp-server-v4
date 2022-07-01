@@ -10,7 +10,6 @@ export class CreateUserService {
   constructor(private readonly prismaService: PrismaService) {}
   async checkUserOverlap(dto: CreateUserDto) {
     const { phoneNumber, email } = dto;
-
     const queryResult = await this.prismaService.users.findFirst({
       where: {
         OR: [
