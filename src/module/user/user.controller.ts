@@ -47,8 +47,8 @@ export class UserController {
     return user;
   }
 
-  @Get(':id')
   @UseGuards(UserAuthGuard)
+  @Get(':id')
   async findUnique(
     @Param()
     params,
@@ -61,6 +61,11 @@ export class UserController {
     return user;
   }
 
+  @Get('')
+  async test() {
+    return 0;
+  }
+
   @Patch(':id')
   @UseGuards(UserAuthGuard)
   async patch(@Param() params, @Body() body: any) {
@@ -71,12 +76,16 @@ export class UserController {
     }
 
     const isOverlapResult = await this.updateUserService.isPhoneNumber(dto);
-    if (isOverlapResult.isPhoneNumberOverlap) {
-      const user = await this.updateUserService.update(params.id, dto);
-      return user;
+    if (!isOverlapResult.isPhoneNumberOverlap) {
+      const isVerified = await this.updateUserService.checkPhoneAuthSessionKey(
+        dto,
+      );
+      if (!isVerified) {
+        throw new HttpException('User info conflict', 409);
+      }
     }
-
-    // TODO: PhoneAuthAccessSession에서 최근에 폰 인증이 되었는지 획인해야함.
+    const user = await this.updateUserService.update(params.id, dto);
+    return user;
   }
 
   @Post('is-exist')

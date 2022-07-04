@@ -9,7 +9,6 @@ export class UserAuthMiddleWare implements NestMiddleware {
 
   async use(req: AuthRequest, res: Response, next: NextFunction) {
     const { claims } = req;
-
     if (!claims || !claims.uid) {
       return next();
     }

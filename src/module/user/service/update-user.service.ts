@@ -27,10 +27,34 @@ export class UpdateUserService {
 
     return result;
   }
+  async checkPhoneAuthSessionKey(dto: UpdateUserDto) {
+    const { phoneAuthSessionKey } = dto;
+    const curTime = new Date();
+    curTime.setMinutes(curTime.getMinutes() + 5);
+    const queryResult = await this.prismaService.phoneAuthSession.findFirst({
+      where: {
+        VerifyNumber: phoneAuthSessionKey,
+      },
+      select: {
+        CreatedAt: true,
+      },
+    });
+    let isVerified = false;
+    if (!queryResult) {
+      return isVerified;
+    }
+    if (queryResult.CreatedAt > curTime) {
+      return isVerified;
+    }
+    isVerified = true;
+
+    return isVerified;
+  }
 
   async update(id: string, dto: UpdateUserDto) {
-    const { name, isDeleted } = dto;
+    const { name, isDeleted, phoneNumber } = dto;
     //1. Firebase 에 계정을 추가한다.
+
     const userRecord = await admin.auth().updateUser(id, {
       disabled: Boolean(isDeleted),
     });
@@ -44,6 +68,7 @@ export class UpdateUserService {
       data: {
         Name: name,
         IsDeleted: isDeleted,
+        PhoneNumber: phoneNumber,
       },
     });
 

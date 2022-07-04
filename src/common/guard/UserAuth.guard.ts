@@ -11,6 +11,7 @@ export class UserAuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
+    console.log(context);
     const req = context.switchToHttp().getRequest<UserAuthRequest>();
     const { id } = req.params;
     if (!id) {
@@ -21,7 +22,6 @@ export class UserAuthGuard implements CanActivate {
     if (!user) {
       return false;
     }
-
     return user.UserID === id;
   }
 }
