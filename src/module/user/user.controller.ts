@@ -15,13 +15,15 @@ import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { IsUserExistsDto } from './dto/IsUserExists.dto';
-import { UserUpdateDto } from './dto/UserUpdate.dto';
+import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { CreateUserService } from './service/create-user.service';
+import { UpdateUserService } from './service/update-user.service';
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly createUserService: CreateUserService,
+    private readonly updateUserService: UpdateUserService,
     private readonly prismaService: PrismaService,
   ) {}
   @Post('create')
@@ -62,35 +64,19 @@ export class UserController {
   @Patch(':id')
   @UseGuards(UserAuthGuard)
   async patch(@Param() params, @Body() body: any) {
-    const dto = plainToInstance(UserUpdateDto, body);
+    const dto = plainToInstance(UpdateUserDto, body);
     const errors = await validate(dto);
     if (errors.length > 0) {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    // TODO: PhoneAuthSession 에서 최근에 휴대폰 인증이 되었는지 확인해야 함.
+    const isOverlapResult = await this.updateUserService.isPhoneNumber(dto);
+    if (isOverlapResult.isPhoneNumberOverlap) {
+      const user = await this.updateUserService.update(params.id, dto);
+      return user;
+    }
 
-    const { name, isDeleted, phoneNumber } = dto;
-    //1. Firebase 에 계정을 추가한다.
-    const userRecord = await admin.auth().updateUser(params.id, {
-      disabled: Boolean(isDeleted),
-      phoneNumber,
-    });
-
-    //2. MySQL 에 추가한다.
-    const { uid } = userRecord;
-    const user = await this.prismaService.users.update({
-      where: {
-        UserID: uid,
-      },
-      data: {
-        Name: name,
-        IsDeleted: isDeleted,
-        PhoneNumber: phoneNumber,
-      },
-    });
-
-    return user;
+    // TODO: PhoneAuthAccessSession에서 최근에 폰 인증이 되었는지 획인해야함.
   }
 
   @Post('is-exist')

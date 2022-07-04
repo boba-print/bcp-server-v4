@@ -5,11 +5,13 @@ import { CreateUserService } from './service/create-user.service';
 import { PrismaService } from 'src/service/prisma.service';
 import { APP_GUARD } from '@nestjs/core';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
+import { UpdateUserService } from './service/update-user.service';
 
 @Module({
   controllers: [UserController],
   providers: [
     CreateUserService,
+    UpdateUserService,
     PrismaService,
     {
       provide: APP_GUARD,
