@@ -73,8 +73,8 @@ export class CreateUserService {
       Name: name,
       PhoneNumber: phoneNumber,
       Points: 0,
-      StorageAllocated: BigInt(GIGABYTE),
-      StorageUsed: BigInt(0),
+      StorageAllocated: GIGABYTE,
+      StorageUsed: 0,
     };
     await this.prismaService.users.create({
       data: user,
