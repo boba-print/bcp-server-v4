@@ -1,8 +1,8 @@
 import { IsBoolean, IsPhoneNumber, IsString, Length } from 'class-validator';
 
 export class UpdateUserDto {
-  @IsString()
   @Length(2, 45)
+  @IsString()
   name: string;
 
   @IsBoolean()
@@ -12,5 +12,5 @@ export class UpdateUserDto {
   phoneNumber: string;
 
   @IsString()
-  phoneAuthSessionKey: string;
+  phoneAuthSessionKey?: string;
 }

@@ -80,10 +80,11 @@ export class UserController {
     const isPhoneOverlap = await this.userService.isPhoneOverlap(
       dto.phoneNumber,
     );
-    if (isPhoneOverlap) {
+    if (!isPhoneOverlap) {
       const isVerified = await this.phoneAuthSessionService.checkKey(
-        dto.phoneAuthSessionKey,
+        dto.phoneAuthSessionKey as string,
       );
+      console.log(isVerified);
       if (!isVerified) {
         throw new HttpException('User info conflict', 409);
       }
