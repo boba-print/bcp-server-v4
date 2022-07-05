@@ -9,6 +9,7 @@ import { AlarmService } from '../../service/alarm.service';
 export class AlarmController {
   constructor(private readonly alarmService: AlarmService) {}
 
+  @UseGuards(UserAuthGuard)
   @Get()
   async getRecent(
     @Req()

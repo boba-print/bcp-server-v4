@@ -9,18 +9,15 @@ export class UserAuthMiddleWare implements NestMiddleware {
 
   async use(req: AuthRequest, res: Response, next: NextFunction) {
     const { claims } = req;
-
     if (!claims || !claims.uid) {
       return next();
     }
     const { uid } = claims;
-
     const user = await this.prismaService.users.findUnique({
       where: {
         UserID: uid,
       },
     });
-
     req['user'] = user ?? undefined;
     next();
   }

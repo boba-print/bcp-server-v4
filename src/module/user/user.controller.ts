@@ -1,12 +1,32 @@
-import { Body, Controller, HttpException, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
+import { PrismaService } from 'src/service/prisma.service';
+import { PhoneAuthSessionService } from '../auth/service/phone-auth-session.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
-import { CreateUserService } from './service/create-user.service';
+import { IsUserExistsDto } from './dto/IsUserExists.dto';
+import { UpdateUserDto } from './dto/UpdateUser.dto';
+import { UserService } from './service/user.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly createUserService: CreateUserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly prismaService: PrismaService,
+    private readonly phoneAuthSessionService: PhoneAuthSessionService,
+  ) {}
+
   @Post('create')
   async create(@Body() body: any) {
     const dto = plainToInstance(CreateUserDto, body);
@@ -15,17 +35,133 @@ export class UserController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    // TODO: PhoneAuthSession 에서 최근에 휴대폰 인증이 되었는지 확인해야 함.
+    const isVerified = await this.phoneAuthSessionService.checkKey(
+      dto.phoneAuthSessionKey,
+    );
+    if (!isVerified) {
+      throw new HttpException('Not available phone auth session', 403);
+    }
 
-    const isOverlapResult = await this.createUserService.checkUserOverlap(dto);
-    if (
-      isOverlapResult.isEmailOverlap ||
-      isOverlapResult.isPhoneNumberOverlap
-    ) {
+    // TODO: PhoneAuthSession 에서 최근에 휴대폰 인증이 되었는지 확인해야 함.
+    const isEmailOverlap = await this.userService.isEmailOverlap(dto.email);
+    const isPhoneOverlap = await this.userService.isPhoneOverlap(
+      dto.phoneNumber,
+    );
+    if (isEmailOverlap || isPhoneOverlap) {
       throw new HttpException('User info conflict', 409);
     }
 
-    const user = await this.createUserService.create(dto);
+    const user = await this.userService.create(dto);
     return user;
+  }
+
+  @Get(':id')
+  @UseGuards(UserAuthGuard)
+  async findUnique(
+    @Param('id')
+    id: string,
+  ) {
+    const user = await this.prismaService.users.findUnique({
+      where: {
+        UserID: id,
+      },
+    });
+    return user;
+  }
+
+  @Get(':id/point-transactions')
+  @UseGuards(UserAuthGuard)
+  async findUserPointTranscations(
+    @Param('id')
+    id: string,
+    @Query('n')
+    n: string,
+  ) {
+    let numLimit: number;
+    // TODO: parseInt 는 throw 하는 경우가 없는지 확인하기
+    try {
+      numLimit = parseInt(n);
+    } catch (err) {
+      console.warn(
+        '[UserController.findUserPointTranscations] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+    if (isNaN(numLimit)) {
+      numLimit = 10;
+    }
+
+    const queryResult = await this.prismaService.pointTransactions.findMany({
+      where: {
+        UserID: id,
+      },
+      take: numLimit,
+    });
+    return queryResult;
+  }
+
+  @Patch(':id')
+  @UseGuards(UserAuthGuard)
+  async patch(@Param('id') id: string, @Body() body: any) {
+    const dto = plainToInstance(UpdateUserDto, body);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new HttpException(errors[0].toString(), 400);
+    }
+
+    // 모든 속성이 undefined 인 경우
+    if (!dto.name && !dto.phoneNumber && !dto.phoneAuthSessionKey) {
+      throw new HttpException('Badly formed', 400);
+    }
+
+    // 휴대폰 번호를 변경 요청할때 session key 가 없는경우. 그리고 반대의 경우
+    if (
+      (!dto.phoneNumber && dto.phoneAuthSessionKey) ||
+      (dto.phoneNumber && !dto.phoneAuthSessionKey)
+    ) {
+      throw new HttpException('Badly formed', 400);
+    }
+
+    // phone auth session 이 유효한지 확인한다.
+    if (dto.phoneNumber && dto.phoneAuthSessionKey) {
+      const isVerified = await this.phoneAuthSessionService.checkKey(
+        dto.phoneAuthSessionKey,
+      );
+      if (!isVerified) {
+        throw new HttpException('Not available phone auth session', 403);
+      }
+    }
+
+    const user = await this.userService.update(id, dto);
+    return user;
+  }
+
+  @Post('is-exist')
+  async isUserExists(
+    @Body()
+    body: any,
+  ) {
+    const existParams = plainToInstance(IsUserExistsDto, body);
+    const errors = await validate(existParams);
+    if (errors.length > 0) {
+      throw new HttpException('Badly formatted request', 400);
+    }
+
+    const users = await this.prismaService.users.findMany({
+      where: {
+        Email: existParams.Email ?? undefined,
+        PhoneNumber: existParams.PhoneNumber ?? undefined,
+      },
+    });
+
+    const result = {
+      exists: true,
+    };
+
+    if (users.length === 0) {
+      result.exists = false;
+    }
+
+    return result;
   }
 }

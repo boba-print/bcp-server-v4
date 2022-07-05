@@ -208,8 +208,8 @@ model Users {
   Name              String              @db.VarChar(45)
   PhoneNumber       String              @db.VarChar(45)
   Points            Int
-  StorageAllocated  BigInt              @db.UnsignedBigInt
-  StorageUsed       BigInt              @db.UnsignedBigInt
+  StorageAllocated  Int                 @db.UnsignedInt
+  StorageUsed       Int                 @db.UnsignedInt
   CardTransactions  CardTransactions[]
   Cards             Cards[]
   Files             Files[]
@@ -329,4 +329,15 @@ model django_session {
   expire_date  DateTime @db.DateTime(6)
 
   @@index([expire_date], map: "django_session_expire_date_a5c62663")
+}
+
+model Notices {
+  NoticeID   String   @id @db.VarChar(40)
+  CreatedAt  DateTime @default(now()) @db.DateTime(0)
+  ModifiedAt DateTime @default(now()) @db.DateTime(0)
+  Title      String   @db.VarChar(100)
+  Content    String   @db.VarChar(300)
+  ImageUrl   String?  @db.VarChar(400)
+  ActionUrl  String?  @db.VarChar(400)
+  Priority   Int
 }
