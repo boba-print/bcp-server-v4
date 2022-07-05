@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -73,14 +74,24 @@ export class UserController {
   async findUserPointTranscations(
     @Param('id')
     id: string,
+    @Query('n')
+    n: string,
   ) {
-    const queryResult = await this.prismaService.users.findUnique({
+    let numLimit: number;
+    try {
+      numLimit = parseInt(n);
+    } catch (err) {
+      console.warn(
+        '[AlarmController.getRecent] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+
+    const queryResult = await this.prismaService.pointTransactions.findMany({
       where: {
         UserID: id,
       },
-      select: {
-        PointTransactions: true,
-      },
+      take: numLimit,
     });
     return queryResult;
   }
@@ -94,18 +105,34 @@ export class UserController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const isPhoneOverlap = await this.userService.isPhoneOverlap(
-      dto.phoneNumber,
-    );
-    if (!isPhoneOverlap) {
+    if (
+      (dto.phoneNumber === undefined &&
+        dto.phoneAuthSessionKey !== undefined) ||
+      (dto.phoneNumber !== undefined && dto.phoneAuthSessionKey === undefined)
+    ) {
+      throw new HttpException('User info conflict', 409);
+    }
+
+    if (
+      dto.name === undefined &&
+      dto.phoneNumber === undefined &&
+      dto.phoneAuthSessionKey === undefined
+    ) {
+      throw new HttpException('User info conflict', 409);
+    }
+
+    if (
+      dto.phoneNumber !== undefined &&
+      dto.phoneAuthSessionKey !== undefined
+    ) {
       const isVerified = await this.phoneAuthSessionService.checkKey(
-        dto.phoneAuthSessionKey as string,
+        dto.phoneAuthSessionKey,
       );
-      console.log(isVerified);
       if (!isVerified) {
         throw new HttpException('User info conflict', 409);
       }
     }
+
     const user = await this.userService.update(id, dto);
     return user;
   }

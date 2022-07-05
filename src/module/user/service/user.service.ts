@@ -49,10 +49,11 @@ export class UserService {
   }
 
   async update(id: string, dto: UpdateUserDto) {
-    const { name, isDeleted, phoneNumber } = dto;
+    const { name, phoneNumber } = dto;
     //1. Firebase 에 계정을 추가한다.
     const userRecord = await admin.auth().updateUser(id, {
-      disabled: Boolean(isDeleted),
+      phoneNumber: phoneNumber,
+      displayName: name,
     });
 
     //2. MySQL 에 추가한다.
@@ -63,7 +64,6 @@ export class UserService {
       },
       data: {
         Name: name,
-        IsDeleted: Number(isDeleted),
         PhoneNumber: phoneNumber,
       },
     });
