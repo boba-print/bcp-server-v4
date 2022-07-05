@@ -12,15 +12,16 @@ export class KioskAuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req = context.switchToHttp().getRequest<KioskAuthRequest>();
+    const { kiosk } = req;
+    if (!kiosk) {
+      return false;
+    }
+
     const { id } = req.params;
     if (!id) {
       return true;
     }
 
-    const { kiosk } = req;
-    if (!kiosk) {
-      return false;
-    }
     return kiosk.KioskID === id;
   }
 }
