@@ -83,4 +83,33 @@ export class CreateUserService {
     return user;
     // TODO: 3. 둘 중 하나라도 동작하지 않으면 rollback 한다.
   }
+
+  async checkPhoneAuthSessionKey(dto: CreateUserDto) {
+    const { phoneNumber } = dto;
+    const curTime = new Date();
+    curTime.setMinutes(curTime.getMinutes() + 5);
+    console.log(curTime);
+    const queryResult = await this.prismaService.phoneAuthSession.findFirst({
+      where: {
+        PhoneNumber: phoneNumber,
+      },
+      select: {
+        CreatedAt: true,
+      },
+    });
+    let isVerified = false;
+    if (!queryResult) {
+      return isVerified;
+    }
+    if (
+      !(
+        (curTime.getTime() - queryResult.CreatedAt.getTime()) / 1000 <
+        5 * 60 * 1000
+      )
+    ) {
+      return isVerified;
+    }
+    isVerified = true;
+    return isVerified;
+  }
 }

@@ -43,7 +43,12 @@ export class UpdateUserService {
     if (!queryResult) {
       return isVerified;
     }
-    if (queryResult.CreatedAt > curTime) {
+    if (
+      !(
+        (curTime.getTime() - queryResult.CreatedAt.getTime()) / 1000 <
+        5 * 60 * 1000
+      )
+    ) {
       return isVerified;
     }
     isVerified = true;

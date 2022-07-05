@@ -35,6 +35,13 @@ export class UserController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
+    const isVerified = await this.createUserService.checkPhoneAuthSessionKey(
+      dto,
+    );
+    if (!isVerified) {
+      throw new HttpException('User info conflict', 409);
+    }
+
     // TODO: PhoneAuthSession 에서 최근에 휴대폰 인증이 되었는지 확인해야 함.
     const isOverlapResult = await this.createUserService.checkUserOverlap(dto);
     if (
@@ -83,7 +90,6 @@ export class UserController {
     const user = await this.updateUserService.update(params.id, dto);
     return user;
   }
-
 
   @Post('is-exist')
   async isUserExists(

@@ -9,15 +9,7 @@ import { UpdateUserService } from './service/update-user.service';
 
 @Module({
   controllers: [UserController],
-  providers: [
-    CreateUserService,
-    UpdateUserService,
-    PrismaService,
-    {
-      provide: APP_GUARD,
-      useClass: UserAuthGuard,
-    },
-  ],
+  providers: [CreateUserService, UpdateUserService, PrismaService],
 })
 export class UserModule {
   configure(consumer: MiddlewareConsumer) {
