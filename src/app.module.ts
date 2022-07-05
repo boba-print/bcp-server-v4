@@ -15,7 +15,7 @@ import { NoticesModule } from './module/notice/notice.module';
 @Module({
   controllers: [AppController],
   providers: [],
-  imports: [UserModule, KioskModule],
+  imports: [UserModule, KioskModule, NoticesModule],
 })
 export class AppModule implements NestModule {
   // Firebase auth 를 통해 user uid (또는 kiosk uid 를 얻기 위한 미들웨어)
