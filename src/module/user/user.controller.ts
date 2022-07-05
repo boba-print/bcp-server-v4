@@ -68,6 +68,23 @@ export class UserController {
     return user;
   }
 
+  @Get(':id/point-transactions')
+  @UseGuards(UserAuthGuard)
+  async findUserPointTranscations(
+    @Param('id')
+    id: string,
+  ) {
+    const queryResult = await this.prismaService.users.findUnique({
+      where: {
+        UserID: id,
+      },
+      select: {
+        PointTransactions: true,
+      },
+    });
+    return queryResult;
+  }
+
   @Patch(':id')
   @UseGuards(UserAuthGuard)
   async patch(@Param('id') id: string, @Body() body: any) {
