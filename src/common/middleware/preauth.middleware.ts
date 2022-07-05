@@ -18,6 +18,7 @@ export class PreauthMiddleware implements NestMiddleware {
       req['claims'] = decodedToken;
       return next();
     } catch (err) {
+      console.log(err);
       return next();
     }
   }

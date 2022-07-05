@@ -208,8 +208,8 @@ model Users {
   Name              String              @db.VarChar(45)
   PhoneNumber       String              @db.VarChar(45)
   Points            Int
-  StorageAllocated  BigInt              @db.UnsignedBigInt
-  StorageUsed       BigInt              @db.UnsignedBigInt
+  StorageAllocated  Int                 @db.UnsignedInt
+  StorageUsed       Int                 @db.UnsignedInt
   CardTransactions  CardTransactions[]
   Cards             Cards[]
   Files             Files[]

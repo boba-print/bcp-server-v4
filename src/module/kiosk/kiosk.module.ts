@@ -10,15 +10,7 @@ import { GCSService } from './service/GCS.service';
 
 @Module({
   controllers: [KiosksController, PrintController],
-  providers: [
-    PrismaService,
-    PrintOrderService,
-    GCSService,
-    {
-      provide: APP_GUARD,
-      useClass: KioskAuthGuard,
-    },
-  ],
+  providers: [PrismaService, PrintOrderService, GCSService],
 })
 export class KioskModule {
   // 키오스크 객체를 req 에 담아서 가져온다
