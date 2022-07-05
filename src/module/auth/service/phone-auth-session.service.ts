@@ -70,7 +70,7 @@ export class PhoneAuthSessionService {
    * @param key - phoneAuthSessionKey
    * @returns boolean
    */
-  async checkPhoneAuthSessionKey(key: string) {
+  async checkKey(key: string) {
     const queryResult = await this.prismaService.phoneAuthSession.findUnique({
       where: {
         PhoneAuthSessionID: key,

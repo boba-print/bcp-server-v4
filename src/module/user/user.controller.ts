@@ -37,7 +37,7 @@ export class UserController {
     }
 
     const isVerified =
-      await this.phoneAuthSessionService.checkPhoneAuthSessionKey(
+      await this.phoneAuthSessionService.checkKey(
         dto.phoneAuthSessionKey,
       );
     if (!isVerified) {
@@ -83,7 +83,7 @@ export class UserController {
     const isOverlapResult = await this.updateUserService.isPhoneNumber(dto);
     if (!isOverlapResult.isPhoneNumberOverlap) {
       const isVerified =
-        await this.phoneAuthSessionService.checkPhoneAuthSessionKey(
+        await this.phoneAuthSessionService.checkKey(
           dto.phoneAuthSessionKey,
         );
       if (!isVerified) {
