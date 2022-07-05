@@ -11,7 +11,10 @@ export class CreateUserDto {
   @IsString()
   password: string;
 
-  @IsString()
   @Length(2, 45)
+  @IsString()
   name: string;
+
+  @IsString()
+  phoneAuthSessionKey: string;
 }

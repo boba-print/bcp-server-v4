@@ -331,13 +331,13 @@ model django_session {
   @@index([expire_date], map: "django_session_expire_date_a5c62663")
 }
 
-model notices {
-  NoticeID  String   @id @db.VarChar(40)
-  CreatedAt DateTime @db.DateTime(0)
-  Title     String   @db.VarChar(100)
-  Content   String   @db.VarChar(300)
-  ImageUrl  String   @db.VarChar(400)
-  ActionUrl String   @db.VarChar(400)
-  Priority  Int
-  UserID    String   @db.VarChar(40)
+model Notices {
+  NoticeID   String   @id @db.VarChar(40)
+  CreatedAt  DateTime @default(now()) @db.DateTime(0)
+  ModifiedAt DateTime @default(now()) @db.DateTime(0)
+  Title      String   @db.VarChar(100)
+  Content    String   @db.VarChar(300)
+  ImageUrl   String?  @db.VarChar(400)
+  ActionUrl  String?  @db.VarChar(400)
+  Priority   Int
 }
