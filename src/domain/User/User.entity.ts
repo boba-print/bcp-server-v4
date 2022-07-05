@@ -12,8 +12,8 @@ export interface UserProps {
   Name: string;
   PhoneNumber: string;
   Points: number;
-  StorageAllocated: bigint;
-  StorageUsed: bigint;
+  StorageAllocated: number;
+  StorageUsed: number;
   Cards?: Cards[];
 }
 

@@ -8,7 +8,6 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import * as admin from 'firebase-admin';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
@@ -47,23 +46,19 @@ export class UserController {
     return user;
   }
 
-  @UseGuards(UserAuthGuard)
   @Get(':id')
+  @UseGuards(UserAuthGuard)
   async findUnique(
-    @Param()
-    params,
+    @Param('id')
+    id: string,
   ) {
     const user = await this.prismaService.users.findUnique({
       where: {
-        UserID: params.id,
+        UserID: id,
       },
     });
-    return user;
-  }
 
-  @Get('')
-  async test() {
-    return 0;
+    return user;
   }
 
   @Patch(':id')
