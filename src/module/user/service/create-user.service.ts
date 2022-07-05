@@ -86,30 +86,38 @@ export class CreateUserService {
 
   async checkPhoneAuthSessionKey(dto: CreateUserDto) {
     const { phoneNumber } = dto;
-    const curTime = new Date();
-    curTime.setMinutes(curTime.getMinutes() + 5);
-    console.log(curTime);
+
     const queryResult = await this.prismaService.phoneAuthSession.findFirst({
       where: {
         PhoneNumber: phoneNumber,
       },
       select: {
         CreatedAt: true,
+        VerifiedAt: true,
+      },
+      orderBy: {
+        CreatedAt: 'desc',
       },
     });
-    let isVerified = false;
+
+    // 인증한 세션이 없다면
     if (!queryResult) {
-      return isVerified;
+      return false;
     }
-    if (
-      !(
-        (curTime.getTime() - queryResult.CreatedAt.getTime()) / 1000 <
-        5 * 60 * 1000
-      )
-    ) {
-      return isVerified;
+
+    // 인증이 완료되지 않았다면
+    const { VerifiedAt } = queryResult;
+    if (!VerifiedAt) {
+      return false;
     }
-    isVerified = true;
-    return isVerified;
+
+    // 5분 내로 완료된 인증이 없다면
+    const now = new Date();
+    const FIVE_MINUTES = 5 * 60 * 1000;
+    if (now.getTime() - VerifiedAt.getTime() > FIVE_MINUTES) {
+      return false;
+    }
+
+    return true;
   }
 }

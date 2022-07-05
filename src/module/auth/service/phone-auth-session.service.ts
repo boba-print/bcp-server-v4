@@ -65,6 +65,42 @@ export class PhoneAuthSessionService {
     return result;
   }
 
+  /**
+   * key 에 해당하는 휴대폰 인증이 있는지 확인하고, 유효한지 확인함.
+   * @param key - phoneAuthSessionKey
+   * @returns boolean
+   */
+  async checkPhoneAuthSessionKey(key: string) {
+    const queryResult = await this.prismaService.phoneAuthSession.findUnique({
+      where: {
+        PhoneAuthSessionID: key,
+      },
+      select: {
+        VerifiedAt: true,
+      },
+    });
+
+    // 인증한 세션이 없다면
+    if (!queryResult) {
+      return false;
+    }
+
+    // 인증이 완료되지 않았다면
+    const { VerifiedAt } = queryResult;
+    if (!VerifiedAt) {
+      return false;
+    }
+
+    // 5분 내로 완료된 인증이 없다면
+    const now = new Date();
+    const FIVE_MINUTES = 5 * 60 * 1000;
+    if (now.getTime() - VerifiedAt.getTime() > FIVE_MINUTES) {
+      return false;
+    }
+
+    return true;
+  }
+
   private generateRandomVerifyNumber() {
     const randomNumber = Math.floor(Math.random() * 90000) + 10000;
     return randomNumber.toString();

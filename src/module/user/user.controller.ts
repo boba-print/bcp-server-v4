@@ -13,6 +13,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
+import { PhoneAuthSessionService } from '../auth/service/phone-auth-session.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { IsUserExistsDto } from './dto/IsUserExists.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
@@ -25,6 +26,7 @@ export class UserController {
     private readonly createUserService: CreateUserService,
     private readonly updateUserService: UpdateUserService,
     private readonly prismaService: PrismaService,
+    private readonly phoneAuthSessionService: PhoneAuthSessionService,
   ) {}
 
   @Post('create')
@@ -80,9 +82,10 @@ export class UserController {
 
     const isOverlapResult = await this.updateUserService.isPhoneNumber(dto);
     if (!isOverlapResult.isPhoneNumberOverlap) {
-      const isVerified = await this.updateUserService.checkPhoneAuthSessionKey(
-        dto,
-      );
+      const isVerified =
+        await this.phoneAuthSessionService.checkPhoneAuthSessionKey(
+          dto.phoneAuthSessionKey,
+        );
       if (!isVerified) {
         throw new HttpException('User info conflict', 409);
       }
