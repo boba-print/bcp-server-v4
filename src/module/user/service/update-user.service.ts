@@ -14,18 +14,15 @@ export class UpdateUserService {
       },
     });
 
-    const result = {
-      isPhoneNumberOverlap: false,
-    };
-
     if (!queryResult) {
-      return result;
-    }
-    if (queryResult.PhoneNumber === phoneNumber) {
-      result.isPhoneNumberOverlap = true;
+      return false;
     }
 
-    return result;
+    if (queryResult.PhoneNumber === phoneNumber) {
+      return true;
+    }
+
+    return false;
   }
 
   async update(id: string, dto: UpdateUserDto) {

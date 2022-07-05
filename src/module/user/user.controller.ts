@@ -36,10 +36,9 @@ export class UserController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const isVerified =
-      await this.phoneAuthSessionService.checkKey(
-        dto.phoneAuthSessionKey,
-      );
+    const isVerified = await this.phoneAuthSessionService.checkKey(
+      dto.phoneAuthSessionKey,
+    );
     if (!isVerified) {
       throw new HttpException('User info conflict', 409);
     }
@@ -81,11 +80,10 @@ export class UserController {
     }
 
     const isOverlapResult = await this.updateUserService.isPhoneNumber(dto);
-    if (!isOverlapResult.isPhoneNumberOverlap) {
-      const isVerified =
-        await this.phoneAuthSessionService.checkKey(
-          dto.phoneAuthSessionKey,
-        );
+    if (isOverlapResult) {
+      const isVerified = await this.phoneAuthSessionService.checkKey(
+        dto.phoneAuthSessionKey,
+      );
       if (!isVerified) {
         throw new HttpException('User info conflict', 409);
       }
