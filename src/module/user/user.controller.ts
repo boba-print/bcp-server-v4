@@ -16,14 +16,12 @@ import { PhoneAuthSessionService } from '../auth/service/phone-auth-session.serv
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { IsUserExistsDto } from './dto/IsUserExists.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
-import { CreateUserService } from './service/create-user.service';
-import { UpdateUserService } from './service/update-user.service';
+import { UserService } from './service/user.service';
 
 @Controller('/users')
 export class UserController {
   constructor(
-    private readonly createUserService: CreateUserService,
-    private readonly updateUserService: UpdateUserService,
+    private readonly userService: UserService,
     private readonly prismaService: PrismaService,
     private readonly phoneAuthSessionService: PhoneAuthSessionService,
   ) {}
@@ -44,15 +42,15 @@ export class UserController {
     }
 
     // TODO: PhoneAuthSession 에서 최근에 휴대폰 인증이 되었는지 확인해야 함.
-    const isOverlapResult = await this.createUserService.checkUserOverlap(dto);
-    if (
-      isOverlapResult.isEmailOverlap ||
-      isOverlapResult.isPhoneNumberOverlap
-    ) {
+    const isEmailOverlap = await this.userService.isEmailOverlap(dto.email);
+    const isPhoneOverlap = await this.userService.isPhoneOverlap(
+      dto.phoneNumber,
+    );
+    if (isEmailOverlap || isPhoneOverlap) {
       throw new HttpException('User info conflict', 409);
     }
 
-    const user = await this.createUserService.create(dto);
+    const user = await this.userService.create(dto);
     return user;
   }
 
@@ -72,15 +70,17 @@ export class UserController {
 
   @Patch(':id')
   @UseGuards(UserAuthGuard)
-  async patch(@Param() params, @Body() body: any) {
+  async patch(@Param('id') id: string, @Body() body: any) {
     const dto = plainToInstance(UpdateUserDto, body);
     const errors = await validate(dto);
     if (errors.length > 0) {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const isOverlapResult = await this.updateUserService.isPhoneNumber(dto);
-    if (isOverlapResult) {
+    const isPhoneOverlap = await this.userService.isPhoneOverlap(
+      dto.phoneNumber,
+    );
+    if (isPhoneOverlap) {
       const isVerified = await this.phoneAuthSessionService.checkKey(
         dto.phoneAuthSessionKey,
       );
@@ -88,7 +88,7 @@ export class UserController {
         throw new HttpException('User info conflict', 409);
       }
     }
-    const user = await this.updateUserService.update(params.id, dto);
+    const user = await this.userService.update(id, dto);
     return user;
   }
 
