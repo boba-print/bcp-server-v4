@@ -19,7 +19,7 @@ import { IsUserExistsDto } from './dto/IsUserExists.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { UserService } from './service/user.service';
 
-@Controller('/users')
+@Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -39,7 +39,7 @@ export class UserController {
       dto.phoneAuthSessionKey,
     );
     if (!isVerified) {
-      throw new HttpException('User info conflict', 409);
+      throw new HttpException('Not available phone auth session', 403);
     }
 
     // TODO: PhoneAuthSession 에서 최근에 휴대폰 인증이 되었는지 확인해야 함.
@@ -78,12 +78,16 @@ export class UserController {
     n: string,
   ) {
     let numLimit: number;
+    // TODO: parseInt 는 throw 하는 경우가 없는지 확인하기
     try {
       numLimit = parseInt(n);
     } catch (err) {
       console.warn(
-        '[AlarmController.getRecent] parsing number error, set to default 10',
+        '[UserController.findUserPointTranscations] parsing number error, set to default 10',
       );
+      numLimit = 10;
+    }
+    if (isNaN(numLimit)) {
       numLimit = 10;
     }
 
@@ -105,31 +109,26 @@ export class UserController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    if (
-      (dto.phoneNumber === undefined &&
-        dto.phoneAuthSessionKey !== undefined) ||
-      (dto.phoneNumber !== undefined && dto.phoneAuthSessionKey === undefined)
-    ) {
-      throw new HttpException('User info conflict', 409);
+    // 모든 속성이 undefined 인 경우
+    if (!dto.name && !dto.phoneNumber && !dto.phoneAuthSessionKey) {
+      throw new HttpException('Badly formed', 400);
     }
 
+    // 휴대폰 번호를 변경 요청할때 session key 가 없는경우. 그리고 반대의 경우
     if (
-      dto.name === undefined &&
-      dto.phoneNumber === undefined &&
-      dto.phoneAuthSessionKey === undefined
+      (!dto.phoneNumber && dto.phoneAuthSessionKey) ||
+      (dto.phoneNumber && !dto.phoneAuthSessionKey)
     ) {
-      throw new HttpException('User info conflict', 409);
+      throw new HttpException('Badly formed', 400);
     }
 
-    if (
-      dto.phoneNumber !== undefined &&
-      dto.phoneAuthSessionKey !== undefined
-    ) {
+    // phone auth session 이 유효한지 확인한다.
+    if (dto.phoneNumber && dto.phoneAuthSessionKey) {
       const isVerified = await this.phoneAuthSessionService.checkKey(
         dto.phoneAuthSessionKey,
       );
       if (!isVerified) {
-        throw new HttpException('User info conflict', 409);
+        throw new HttpException('Not available phone auth session', 403);
       }
     }
 
