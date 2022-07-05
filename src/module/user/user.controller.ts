@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -37,9 +36,10 @@ export class UserController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const isVerified = await this.createUserService.checkPhoneAuthSessionKey(
-      dto,
-    );
+    const isVerified =
+      await this.phoneAuthSessionService.checkPhoneAuthSessionKey(
+        dto.phoneAuthSessionKey,
+      );
     if (!isVerified) {
       throw new HttpException('User info conflict', 409);
     }
