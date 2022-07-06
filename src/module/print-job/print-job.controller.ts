@@ -24,7 +24,7 @@ export class PrintJobController {
     let numLimit = parseInt(n);
     if (isNaN(numLimit)) {
       console.warn(
-        '[UserController.findUserPrintJobs] parsing number error, set to default 10',
+        '[PrintJobController.findMany] parsing number error, set to default 10',
       );
       numLimit = 10;
     }
