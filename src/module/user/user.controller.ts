@@ -69,6 +69,33 @@ export class UserController {
     return user;
   }
 
+  @Get(':id/print-orders')
+  @UseGuards(UserAuthGuard)
+  async findUserPrintOrders(
+    @Param('id')
+    id: string,
+    @Query('n')
+    n: string,
+  ) {
+    let numLimit: number;
+    numLimit = parseInt(n);
+    if (isNaN(numLimit)) {
+      console.warn(
+        '[UserController.findUserPointTranscations] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+
+    const queryResult = await this.prismaService.printOrders.findMany({
+      where: {
+        UserID: id,
+      },
+      take: numLimit,
+    });
+
+    return queryResult;
+  }
+
   @Get(':id/point-transactions')
   @UseGuards(UserAuthGuard)
   async findUserPointTranscations(
