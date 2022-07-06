@@ -14,10 +14,14 @@ import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from './dto/CreatePrintJob.dto';
+import { PrintJobService } from './service/print-job.service';
 
 @Controller('users')
 export class PrintJobController {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly printJobService: PrintJobService,
+  ) {}
 
   @Get(':userId/print-jobs')
   @UseGuards(UserAuthGuard)
@@ -54,7 +58,6 @@ export class PrintJobController {
     return printJob;
   }
 
-  /*
   @Post(':userId/print-jobs/create')
   @UseGuards(UserAuthGuard)
   async create(@Param('userId') userId: string, @Body() body: any) {
@@ -63,8 +66,10 @@ export class PrintJobController {
     if (errors.length > 0) {
       throw new HttpException(errors[0].toString(), 400);
     }
+
+    const printJob = await this.printJobService.create(dto);
+    return printJob;
   }
-  */
 
   @Delete(':userId/print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)

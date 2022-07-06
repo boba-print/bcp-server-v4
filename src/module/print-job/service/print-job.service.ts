@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrintJobs } from '@prisma/client';
-import * as admin from 'firebase-admin';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from '../dto/CreatePrintJob.dto';
 
@@ -10,9 +9,9 @@ export class PrintJobService {
 
   async create(dto: CreatePrintJobDto) {
     const {
-      kioskID,
-      userID,
-      fileID,
+      kioskId,
+      userId,
+      fileId,
       numPrintPages,
       verificationNumber,
       numCopies,
@@ -25,16 +24,15 @@ export class PrintJobService {
       pageRanges,
     } = dto;
 
-    //TODO: 1.Firebase에 printJob을 추가해야함.
     const now = new Date();
     const printJob: PrintJobs = {
       PrintJobID: 'abc',
       CreatedAt: now,
       ModifiedAt: now,
       IsDeleted: 0,
-      KioskID: kioskID,
-      UserID: userID,
-      FileID: fileID,
+      KioskID: kioskId,
+      UserID: userId,
+      FileID: fileId,
       NumPrintPages: numPrintPages,
       VerificationNumber: verificationNumber,
       NumCopies: numCopies,
@@ -47,8 +45,10 @@ export class PrintJobService {
       PageRanges: pageRanges,
     };
 
-    await this.prismaService.printJobs.create({
+    const queryResult = await this.prismaService.printJobs.create({
       data: printJob,
     });
+
+    return queryResult;
   }
 }

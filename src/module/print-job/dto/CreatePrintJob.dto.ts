@@ -7,17 +7,14 @@ import {
 } from 'class-validator';
 
 export class CreatePrintJobDto {
-  @IsUUID()
   @IsString()
-  kioskID: string;
+  kioskId: string;
 
-  @IsUUID()
   @IsString()
-  userID: string;
+  userId: string;
 
-  @IsUUID()
   @IsString()
-  fileID: string;
+  fileId: string;
 
   @IsOptional()
   @IsNumber()
