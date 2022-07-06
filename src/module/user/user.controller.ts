@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Param,
@@ -189,5 +190,19 @@ export class UserController {
     }
 
     return result;
+  }
+
+  @Delete(':userId')
+  async remove(@Param('userId') userId: string) {
+    const user = await this.prismaService.users.update({
+      where: {
+        UserID: userId,
+      },
+      data: {
+        IsDeleted: 1,
+      },
+    });
+
+    return user;
   }
 }
