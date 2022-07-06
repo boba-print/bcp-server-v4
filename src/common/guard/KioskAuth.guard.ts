@@ -17,11 +17,11 @@ export class KioskAuthGuard implements CanActivate {
       return false;
     }
 
-    const { id } = req.params;
-    if (!id) {
+    const { kioskId } = req.params;
+    if (!kioskId) {
       return true;
     }
 
-    return kiosk.KioskID === id;
+    return kiosk.KioskID === kioskId;
   }
 }
