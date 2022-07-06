@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Param,
@@ -64,4 +65,18 @@ export class PrintJobController {
     }
   }
   */
+
+  @Delete(':userId/print-jobs/:printJobId')
+  @UseGuards(UserAuthGuard)
+  async remove(@Param() params) {
+    const printJob = await this.prismaService.printJobs.update({
+      where: {
+        PrintJobID: params.printJobId,
+      },
+      data: {
+        IsDeleted: 1,
+      },
+    });
+    return printJob;
+  }
 }
