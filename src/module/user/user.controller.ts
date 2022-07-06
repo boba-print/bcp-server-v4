@@ -55,25 +55,25 @@ export class UserController {
     return user;
   }
 
-  @Get(':id')
+  @Get(':userId')
   @UseGuards(UserAuthGuard)
   async findUnique(
-    @Param('id')
-    id: string,
+    @Param('userId')
+    userId: string,
   ) {
     const user = await this.prismaService.users.findUnique({
       where: {
-        UserID: id,
+        UserID: userId,
       },
     });
     return user;
   }
 
-  @Get(':id/print-orders')
+  @Get(':userId/print-orders')
   @UseGuards(UserAuthGuard)
   async findUserPrintOrders(
-    @Param('id')
-    id: string,
+    @Param('userId')
+    userId: string,
     @Query('n')
     n: string,
   ) {
@@ -88,19 +88,22 @@ export class UserController {
 
     const printOrders = await this.prismaService.printOrders.findMany({
       where: {
-        UserID: id,
+        UserID: userId,
       },
       take: numLimit,
+      orderBy: {
+        CreatedAt: 'desc',
+      },
     });
 
     return printOrders;
   }
 
-  @Get(':id/point-transactions')
+  @Get(':userId/point-transactions')
   @UseGuards(UserAuthGuard)
   async findUserPointTranscations(
-    @Param('id')
-    id: string,
+    @Param('userId')
+    userId: string,
     @Query('n')
     n: string,
   ) {
@@ -115,21 +118,27 @@ export class UserController {
       numLimit = 10;
     }
     if (isNaN(numLimit)) {
+      console.warn(
+        '[UserController.findUserPointTranscations] parsing number error, set to default 10',
+      );
       numLimit = 10;
     }
 
     const queryResult = await this.prismaService.pointTransactions.findMany({
       where: {
-        UserID: id,
+        UserID: userId,
       },
       take: numLimit,
+      orderBy: {
+        CreatedAt: 'desc',
+      },
     });
     return queryResult;
   }
 
-  @Patch(':id')
+  @Patch(':userId')
   @UseGuards(UserAuthGuard)
-  async patch(@Param('id') id: string, @Body() body: any) {
+  async patch(@Param('userId') userId: string, @Body() body: any) {
     const dto = plainToInstance(UpdateUserDto, body);
     const errors = await validate(dto);
     if (errors.length > 0) {
@@ -159,7 +168,7 @@ export class UserController {
       }
     }
 
-    const user = await this.userService.update(id, dto);
+    const user = await this.userService.update(userId, dto);
     return user;
   }
 
