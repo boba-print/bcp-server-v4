@@ -81,19 +81,19 @@ export class UserController {
     numLimit = parseInt(n);
     if (isNaN(numLimit)) {
       console.warn(
-        '[UserController.findUserPointTranscations] parsing number error, set to default 10',
+        '[UserController.findUserPrintOrders] parsing number error, set to default 10',
       );
       numLimit = 10;
     }
 
-    const queryResult = await this.prismaService.printOrders.findMany({
+    const printOrders = await this.prismaService.printOrders.findMany({
       where: {
         UserID: id,
       },
       take: numLimit,
     });
 
-    return queryResult;
+    return printOrders;
   }
 
   @Get(':id/point-transactions')
