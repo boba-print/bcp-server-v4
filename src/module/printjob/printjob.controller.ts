@@ -26,4 +26,16 @@ export class PrintJobController {
 
     return printJobs;
   }
+
+  @Get(':userId/print-jobs/:printJobId')
+  @UseGuards(UserAuthGuard)
+  async findOne(@Param() params) {
+    const printJob = await this.prismaService.printJobs.findFirst({
+      where: {
+        UserID: params.userId,
+        PrintJobID: params.printJobId,
+      },
+    });
+    return printJob;
+  }
 }
