@@ -48,18 +48,20 @@ export class KiosksController {
     return dtos;
   }
 
-  @Get(':id')
+  @Get(':kioskId')
   async findUnique(
-    @Param()
-    params,
+    @Param('kioskId')
+    kioskId: string,
   ) {
     const kiosk = await this.prismaService.kiosks.findUnique({
-      where: params.id,
+      where: {
+        KioskID: kioskId,
+      },
     });
     return kiosk;
   }
 
-  @Post(':id/supply-paper')
+  @Post(':kioskId/supply-paper')
   @UseGuards(KioskAuthGuard)
   async update(
     @Req()
@@ -77,11 +79,11 @@ export class KiosksController {
     });
   }
 
-  @Post(':id/heartbeat')
+  @Post(':kioskId/heartbeat')
   @UseGuards(KioskAuthGuard)
   async heartbeat(
-    @Param('id')
-    id: string,
+    @Param('kioskId')
+    kioskId: string,
     @Body()
     body: KioskHeartBeatDto,
   ) {
@@ -93,7 +95,7 @@ export class KiosksController {
 
     return this.prismaService.kiosks.update({
       where: {
-        KioskID: id,
+        KioskID: kioskId,
       },
       data: {
         LastConnectedAt: new Date(),
@@ -102,11 +104,11 @@ export class KiosksController {
     });
   }
 
-  @Post(':id/passcode/verify')
+  @Post(':kioskId/passcode/verify')
   @UseGuards(KioskAuthGuard)
   async verifyPasscode(
-    @Param('id')
-    id: string,
+    @Param('kioskId')
+    kioskId: string,
     @Body()
     body: PasscodeVerifyDto,
   ) {
@@ -121,7 +123,7 @@ export class KiosksController {
         MaintenancePasscode: true,
       },
       where: {
-        KioskID: id,
+        KioskID: kioskId,
       },
     });
     if (!queryResult) {
