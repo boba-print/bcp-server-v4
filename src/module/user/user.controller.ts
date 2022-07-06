@@ -17,6 +17,7 @@ import { PhoneAuthSessionService } from '../auth/service/phone-auth-session.serv
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { IsUserExistsDto } from './dto/IsUserExists.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
+import { PrintOrderService } from './service/print-order.service';
 import { UserService } from './service/user.service';
 
 @Controller('users')
@@ -24,6 +25,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly prismaService: PrismaService,
+    private readonly printOrderService: PrintOrderService,
     private readonly phoneAuthSessionService: PhoneAuthSessionService,
   ) {}
 
@@ -85,15 +87,13 @@ export class UserController {
       numLimit = 10;
     }
 
-    const printOrders = await this.prismaService.printOrders.findMany({
-      where: {
+    const printOrders = await this.printOrderService.findMany(
+      {
         UserID: userId,
       },
-      take: numLimit,
-      orderBy: {
-        CreatedAt: 'desc',
-      },
-    });
+      0,
+      numLimit,
+    );
 
     return printOrders;
   }
