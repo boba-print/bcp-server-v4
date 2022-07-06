@@ -12,7 +12,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
-import { CreateFileDto } from './dto/CreateFile.dto';
+import { CreatePrintJobDto } from './dto/CreatePrintJob.dto';
 
 @Controller('users')
 export class PrintJobController {
@@ -53,13 +53,15 @@ export class PrintJobController {
     return printJob;
   }
 
+  /*
   @Post(':userId/print-jobs/create')
   @UseGuards(UserAuthGuard)
   async create(@Param('userId') userId: string, @Body() body: any) {
-    const dto = plainToInstance(CreateFileDto, body);
+    const dto = plainToInstance(CreatePrintJobDto, body);
     const errors = await validate(dto);
     if (errors.length > 0) {
       throw new HttpException(errors[0].toString(), 400);
     }
   }
+  */
 }

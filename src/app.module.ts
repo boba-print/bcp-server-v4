@@ -9,7 +9,7 @@ import { KioskModule } from './module/kiosk/kiosk.module';
 import { PreauthMiddleware } from './common/middleware/preauth.middleware';
 import { UserModule } from './module/user/user.module';
 import { NoticesModule } from './module/notice/notice.module';
-import { PrintJobModule } from './module/printjob/printjob.module';
+import { PrintJobModule } from './module/print-job/print-job.module';
 
 @Module({
   controllers: [AppController],
