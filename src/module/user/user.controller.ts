@@ -77,8 +77,7 @@ export class UserController {
     @Query('n')
     n: string,
   ) {
-    let numLimit: number;
-    numLimit = parseInt(n);
+    let numLimit = parseInt(n);
     if (isNaN(numLimit)) {
       console.warn(
         '[UserController.findUserPrintOrders] parsing number error, set to default 10',
@@ -107,16 +106,7 @@ export class UserController {
     @Query('n')
     n: string,
   ) {
-    let numLimit: number;
-    // TODO: parseInt 는 throw 하는 경우가 없는지 확인하기
-    try {
-      numLimit = parseInt(n);
-    } catch (err) {
-      console.warn(
-        '[UserController.findUserPointTranscations] parsing number error, set to default 10',
-      );
-      numLimit = 10;
-    }
+    let numLimit = parseInt(n);
     if (isNaN(numLimit)) {
       console.warn(
         '[UserController.findUserPointTranscations] parsing number error, set to default 10',

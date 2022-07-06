@@ -21,8 +21,7 @@ export class PrintJobController {
   @Get(':userId/print-jobs')
   @UseGuards(UserAuthGuard)
   async findMany(@Param('userId') userId: string, @Query('n') n: string) {
-    let numLimit: number;
-    numLimit = parseInt(n);
+    let numLimit = parseInt(n);
     if (isNaN(numLimit)) {
       console.warn(
         '[UserController.findUserPrintJobs] parsing number error, set to default 10',
