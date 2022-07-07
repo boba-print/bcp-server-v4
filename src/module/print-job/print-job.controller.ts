@@ -44,6 +44,11 @@ export class PrintJobController {
         PrintJobID: params.printJobId,
       },
     });
+
+    if (!printJob) {
+      throw new HttpException('printJob info conflict', 409);
+    }
+
     return printJob;
   }
 
@@ -56,13 +61,24 @@ export class PrintJobController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const printJob = await this.printJobService.create(userId, dto);
-    return printJob;
+    //const printJob = await this.printJobService.create(userId, dto);
+    //return printJob;
   }
 
   @Delete(':userId/print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async remove(@Param() params) {
+    const result = await this.prismaService.printJobs.findFirst({
+      where: {
+        FileID: params.fileId,
+        UserID: params.userId,
+      },
+    });
+
+    if (!result) {
+      throw new HttpException('printJob info conflict', 409);
+    }
+
     const printJob = await this.prismaService.printJobs.update({
       where: {
         PrintJobID: params.printJobId,
