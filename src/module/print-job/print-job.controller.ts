@@ -6,7 +6,6 @@ import {
   HttpException,
   Param,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -25,21 +24,10 @@ export class PrintJobController {
 
   @Get(':userId/print-jobs')
   @UseGuards(UserAuthGuard)
-  async findMany(@Param('userId') userId: string, @Query('n') n: string) {
-    let numLimit = parseInt(n);
-    if (isNaN(numLimit)) {
-      console.warn(
-        '[PrintJobController.findMany] parsing number error, set to default 10',
-      );
-      numLimit = 10;
-    }
+  async findMany(@Param('userId') userId: string) {
     const printJobs = await this.prismaService.printJobs.findMany({
       where: {
         UserID: userId,
-      },
-      take: numLimit,
-      orderBy: {
-        CreatedAt: 'desc',
       },
     });
 
@@ -55,25 +43,51 @@ export class PrintJobController {
         PrintJobID: params.printJobId,
       },
     });
+
+    if (!printJob) {
+      throw new HttpException('printJob info conflict', 409);
+    }
+
     return printJob;
   }
 
   @Post(':userId/print-jobs/create')
   @UseGuards(UserAuthGuard)
-  async create(@Param('userId') userId: string, @Body() body: any) {
+  async create(@Param('userId') userId, @Body() body: any) {
     const dto = plainToInstance(CreatePrintJobDto, body);
     const errors = await validate(dto);
     if (errors.length > 0) {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const printJob = await this.printJobService.create(dto);
+    const files = await this.prismaService.files.findFirst({
+      where: {
+        UserID: userId,
+        FileID: dto.fileId,
+      },
+    });
+    if (!files) {
+      throw new HttpException('printJob info conflict', 409);
+    }
+
+    const printJob = await this.printJobService.create(userId, dto);
     return printJob;
   }
 
   @Delete(':userId/print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async remove(@Param() params) {
+    const result = await this.prismaService.printJobs.findFirst({
+      where: {
+        FileID: params.fileId,
+        UserID: params.userId,
+      },
+    });
+
+    if (!result) {
+      throw new HttpException('printJob info conflict', 409);
+    }
+
     const printJob = await this.prismaService.printJobs.update({
       where: {
         PrintJobID: params.printJobId,

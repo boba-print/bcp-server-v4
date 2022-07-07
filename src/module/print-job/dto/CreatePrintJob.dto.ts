@@ -1,9 +1,12 @@
 import {
+  IsEnum,
   IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class CreatePrintJobDto {
@@ -11,18 +14,10 @@ export class CreatePrintJobDto {
   kioskId: string;
 
   @IsString()
-  userId: string;
-
-  @IsString()
   fileId: string;
 
-  @IsOptional()
-  @IsNumber()
-  numPrintPages: number | null;
-
-  @IsNumberString()
-  verificationNumber: string;
-
+  @Max(999)
+  @Min(1)
   @IsNumber()
   numCopies: number;
 

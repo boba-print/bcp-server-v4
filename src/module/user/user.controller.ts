@@ -20,6 +20,7 @@ import { IsUserExistsDto } from './dto/IsUserExists.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { PrintOrderService } from './service/print-order.service';
 import { UserService } from './service/user.service';
+import * as admin from 'firebase-admin';
 
 @Controller('users')
 export class UserController {
@@ -194,9 +195,13 @@ export class UserController {
 
   @Delete(':userId')
   async remove(@Param('userId') userId: string) {
+    const userRecord = await admin.auth().updateUser(userId, {
+      disabled: true,
+    });
+    const { uid } = userRecord;
     const user = await this.prismaService.users.update({
       where: {
-        UserID: userId,
+        UserID: uid,
       },
       data: {
         IsDeleted: 1,

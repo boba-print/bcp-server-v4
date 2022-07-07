@@ -25,24 +25,16 @@ export class FileController {
 
   @Get(':userId/files')
   @UseGuards(UserAuthGuard)
-  async findMany(@Param('userId') userId: string, @Query('n') n: string) {
-    let numLimit = parseInt(n);
-    if (isNaN(numLimit)) {
-      console.warn(
-        '[UserController.findUserFiles] parsing number error, set to default 10',
-      );
-      numLimit = 10;
-    }
-
+  async findMany(@Param('userId') userId: string) {
     const files = await this.prismaService.files.findMany({
       where: {
         UserID: userId,
       },
-      take: numLimit,
-      orderBy: {
-        CreatedAt: 'desc',
-      },
     });
+
+    if (!files) {
+      throw new HttpException('No files', 404);
+    }
 
     return files;
   }
@@ -71,17 +63,28 @@ export class FileController {
     if (!dto.name) {
       throw new HttpException('Badly formed', 400);
     }
-    const file = await this.fileService.update(params.fileId, dto.name);
+    const file = await this.fileService.update(params, dto.name);
 
     return file;
   }
 
   @Delete(':userId/files/:fileId')
   @UseGuards(UserAuthGuard)
-  async remove(@Param('fileId') fileId: string) {
+  async remove(@Param() params) {
+    const result = await this.prismaService.files.findFirst({
+      where: {
+        FileID: params.fileId,
+        UserID: params.userId,
+      },
+    });
+
+    if (!result) {
+      throw new HttpException('No file', 404);
+    }
+
     const file = await this.prismaService.files.update({
       where: {
-        FileID: fileId,
+        FileID: params.fileId,
       },
       data: {
         IsDeleted: 1,
