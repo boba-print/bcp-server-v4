@@ -25,21 +25,10 @@ export class PrintJobController {
 
   @Get(':userId/print-jobs')
   @UseGuards(UserAuthGuard)
-  async findMany(@Param('userId') userId: string, @Query('n') n: string) {
-    let numLimit = parseInt(n);
-    if (isNaN(numLimit)) {
-      console.warn(
-        '[PrintJobController.findMany] parsing number error, set to default 10',
-      );
-      numLimit = 10;
-    }
+  async findMany(@Param('userId') userId: string) {
     const printJobs = await this.prismaService.printJobs.findMany({
       where: {
         UserID: userId,
-      },
-      take: numLimit,
-      orderBy: {
-        CreatedAt: 'desc',
       },
     });
 
