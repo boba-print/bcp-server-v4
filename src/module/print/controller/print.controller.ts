@@ -1,14 +1,10 @@
 import {
-  Body,
   Controller,
   Get,
-  HttpCode,
   HttpException,
-  Param,
   Post,
-  Put,
+  Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { KioskAuthRequest } from 'src/common/interface/KioskAuthRequest';
 import { KioskEntity } from 'src/domain/Kiosk/Kiosk.entity';
@@ -20,7 +16,7 @@ import { GCSService } from '../../kiosk/service/GCS.service';
 import { PrintOrderService } from '../service/PrintOrder.service';
 
 // TODO: use guards
-@Controller('print')
+@Controller('kiosks/:kioskId/print-jobs')
 export class PrintController {
   // TODO: Add service
   constructor(
@@ -29,13 +25,17 @@ export class PrintController {
     private readonly gcsService: GCSService,
   ) {}
 
-  @Get(':verifyNumber')
+  @Get()
   async findManyWithVerifyNumber(
-    @Param('verifyNumber')
+    @Query('verify-num')
     verifyNumber: string,
     @Req()
     req: KioskAuthRequest,
   ) {
+    if (this.isValidVerifyNumber(verifyNumber)) {
+      throw new HttpException('Baddly formatted verify number', 400);
+    }
+
     const { kiosk } = req;
 
     // 키오스크의 인증번호에 해당하는 printJob들과 해당하는 파일들을 가져온다.
@@ -85,9 +85,9 @@ export class PrintController {
     return printJobsDto;
   }
 
-  @Post(':verifyNumber/checkout')
+  @Post('checkout')
   async checkout(
-    @Param('verifyNumber')
+    @Query('verify-num')
     verifyNumber: string,
     @Req()
     req: KioskAuthRequest,
@@ -132,11 +132,22 @@ export class PrintController {
     );
   }
 
-  onCardFailed(err: CardPaymentFailedError) {
+  private onCardFailed(err: CardPaymentFailedError) {
     err.card.RejectionMessage = err.message;
     return this.prismaService.cards.update({
       where: { CardID: err.card.CardID },
       data: err.card,
     });
+  }
+
+  private isValidVerifyNumber(verifyNumber: string | null) {
+    if (
+      !verifyNumber ||
+      verifyNumber.length !== 5 ||
+      isNaN(parseInt(verifyNumber))
+    ) {
+      return false;
+    }
+    return true;
   }
 }
