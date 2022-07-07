@@ -3,14 +3,12 @@ import {
   Controller,
   Get,
   HttpException,
-  HttpStatus,
   Param,
   Post,
-  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { classToPlain, instanceToPlain, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { KioskAuthRequest } from 'src/common/interface/KioskAuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
@@ -18,7 +16,7 @@ import { KioskAuthGuard } from '../../../common/guard/KioskAuth.guard';
 import { KioskHeartBeatDto } from '../dto/KioskHeartBeat.dto';
 import { KioskPasscodeVerifyResultDto } from '../dto/KioskPasscodeVerifyResult.dto';
 import { PasscodeVerifyDto } from '../dto/PasscodeVerify.dto';
-import { KioskCoordsMapper } from '../mapper/KioskCoords.mapper';
+import { KioskCoordsDto } from '../dto/KioskCoords.dto';
 
 // TODO: use guards
 @Controller('kiosks')
@@ -42,8 +40,9 @@ export class KiosksController {
         PriceA4Mono: true,
       },
     });
+    console.log(kiosks);
 
-    const dtos = kiosks.map((k) => plainToClass(KioskCoordsMapper, k));
+    const dtos = kiosks.map((k) => plainToClass(KioskCoordsDto, k));
     console.log(dtos);
     return dtos;
   }
