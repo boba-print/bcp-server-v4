@@ -1,0 +1,5 @@
+export enum Duplex {
+  TWO_SIDE_LONG = 'TWO_SIDE_LONG',
+  TWO_SIDE_SHORT = 'TWO_SIDE_SHORT',
+  ONE_SIDED = 'ONE_SIDED',
+}
