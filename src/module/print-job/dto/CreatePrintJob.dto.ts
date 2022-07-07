@@ -11,9 +11,6 @@ export class CreatePrintJobDto {
   kioskId: string;
 
   @IsString()
-  userId: string;
-
-  @IsString()
   fileId: string;
 
   @IsOptional()

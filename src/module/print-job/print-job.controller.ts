@@ -67,7 +67,7 @@ export class PrintJobController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
-    const printJob = await this.printJobService.create(dto);
+    const printJob = await this.printJobService.create(userId, dto);
     return printJob;
   }
 

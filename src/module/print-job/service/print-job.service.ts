@@ -7,10 +7,9 @@ import { CreatePrintJobDto } from '../dto/CreatePrintJob.dto';
 export class PrintJobService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(dto: CreatePrintJobDto) {
+  async create(userId: string, dto: CreatePrintJobDto) {
     const {
       kioskId,
-      userId,
       fileId,
       numPrintPages,
       verificationNumber,
@@ -23,7 +22,7 @@ export class PrintJobService {
       isColor,
       pageRanges,
     } = dto;
-
+    //uuId 생성해야 함 내가 임의로 uuid 라이브러리 써도 되는지
     const now = new Date();
     const printJob: PrintJobs = {
       PrintJobID: 'abc',
