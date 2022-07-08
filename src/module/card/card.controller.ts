@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 
@@ -13,11 +13,9 @@ export class CardController {
       where: {
         UserID: userId,
       },
-      orderBy: {
-        CreatedAt: 'desc',
-      },
     });
 
     return cards;
   }
 }
+``;

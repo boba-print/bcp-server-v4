@@ -13,7 +13,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
-import { UpdateFileDto } from './dto/updateFile.dto';
+import { UpdateFileDto } from './dto/UpdateFile.dto';
 import { FileService } from './service/file.service';
 
 @Controller('users')
