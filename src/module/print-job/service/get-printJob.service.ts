@@ -111,16 +111,8 @@ export class GetPrintJobService {
 
   private async priceCalculator(printJob: any, kiosk: any) {
     if (printJob.IsColor) {
-      return (
-        Number(printJob.NumPrintPages) *
-        Number(kiosk.PriceA4Color) *
-        Number(printJob.NumCopies)
-      );
+      return Number(printJob.NumPrintPages) * Number(kiosk.PriceA4Color);
     }
-    return (
-      Number(printJob.NumPrintPages) *
-      Number(kiosk.PriceA4Mono) *
-      Number(printJob.NumCopies)
-    );
+    return Number(printJob.NumPrintPages) * Number(kiosk.PriceA4Mono);
   }
 }
