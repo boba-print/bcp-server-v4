@@ -31,8 +31,10 @@ export class PrintJobService {
     const numPrintPages = await this.getNumPage(fileId);
 
     // random 5자리 숫자 문자열 생성
-    const verificationNumber = await this.randomNumGenerator();
-
+    let verificationNumber = await this.checkOverlapPassword(userId, kioskId);
+    if (!verificationNumber) {
+      verificationNumber = await this.randomNumGenerator();
+    }
     //PageRanges 유효성 검사
     const isPageRangesValidate = await this.pageRangesValidator(pageRanges);
     if (!isPageRangesValidate) {
@@ -52,10 +54,13 @@ export class PrintJobService {
     }
     //uuId 생성해야 함 내가 임의로 uuid 라이브러리 써도 되는지
     const now = new Date();
+    let expireAt = now;
+    expireAt.setDate(expireAt.getHours() + 48);
     const printJob: PrintJobs = {
       PrintJobID: v4(),
       CreatedAt: now,
       ModifiedAt: now,
+      ExpireAt: expireAt,
       IsDeleted: 0,
       KioskID: kioskId,
       UserID: userId,
@@ -163,9 +168,33 @@ export class PrintJobService {
   private async randomNumGenerator() {
     const numbers = '0123456789';
     let verificationNumber = '';
-    for (let i = 0; i < 5; i++) {
-      verificationNumber += numbers.charAt(Math.floor(Math.random() * 10));
+    while (true) {
+      verificationNumber = '';
+      for (let i = 0; i < 5; i++) {
+        verificationNumber += numbers.charAt(Math.floor(Math.random() * 10));
+      }
+      const queryResult = await this.prismaService.printJobs.findFirst({
+        where: {
+          VerificationNumber: verificationNumber,
+        },
+      });
+      if (!queryResult) {
+        break;
+      }
     }
     return verificationNumber;
+  }
+
+  private async checkOverlapPassword(userId: string, kioskId: string) {
+    const printJob = await this.prismaService.printJobs.findFirst({
+      where: {
+        UserID: userId,
+        KioskID: kioskId,
+      },
+    });
+    if (!printJob) {
+      return;
+    }
+    return printJob.VerificationNumber;
   }
 }

@@ -60,6 +60,7 @@ export class PrintJobController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
+    // 해당 파일이 해당 유저의 파일인지 판별
     const files = await this.prismaService.files.findFirst({
       where: {
         UserID: userId,
