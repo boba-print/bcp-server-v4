@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -21,6 +22,8 @@ import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { PrintOrderService } from './service/print-order.service';
 import { UserService } from './service/user.service';
 import * as admin from 'firebase-admin';
+import { UserAuthRequest } from 'src/common/interface/UserAuthRequest';
+import { AlarmService } from './service/alarm.service';
 
 @Controller('users')
 export class UserController {
@@ -29,6 +32,7 @@ export class UserController {
     private readonly prismaService: PrismaService,
     private readonly printOrderService: PrintOrderService,
     private readonly phoneAuthSessionService: PhoneAuthSessionService,
+    private readonly alarmService: AlarmService,
   ) {}
 
   @Post('create')
@@ -71,6 +75,29 @@ export class UserController {
       },
     });
     return user;
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Get(':userId/alarms')
+  async getRecent(
+    @Req()
+    req: UserAuthRequest,
+    @Query('n')
+    n: string,
+  ) {
+    // TODO: 현재는 프린트 내역만 알람으로 가져온다. 추후에 공지사항과 기타 알림 기능도 알람에 포함되어야 함.
+    const { user } = req;
+
+    let numLimit: number;
+    try {
+      numLimit = parseInt(n);
+    } catch (err) {
+      console.warn(
+        '[AlarmController.getRecent] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+    return this.alarmService.getAlarms(user, numLimit);
   }
 
   @Get(':userId/print-orders')

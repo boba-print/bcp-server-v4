@@ -6,6 +6,7 @@ import { PhoneAuthSessionService } from '../auth/service/phone-auth-session.serv
 import { NaverSmsService } from '../auth/service/naver-sms.service';
 import { UserService } from './service/user.service';
 import { PrintOrderService } from './service/print-order.service';
+import { AlarmService } from './service/alarm.service';
 
 @Module({
   controllers: [UserController],
@@ -16,6 +17,7 @@ import { PrintOrderService } from './service/print-order.service';
     // TODO: Auth 모듈을 한번에 불러올수는 없을까?
     PhoneAuthSessionService,
     NaverSmsService,
+    AlarmService,
   ],
 })
 export class UserModule {
