@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { Kiosks, PrintJobs } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { PrintJobDto } from '../dto/PrintJob.dto';
 import { Duplex } from '../types/Duplex';
@@ -14,6 +15,7 @@ import { PrintTicket } from '../types/PrintTicket';
 export class GetPrintJobService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  // 해당 printjob이 해당 user의 것인지 판단, kiosks 가져오기
   async findOne(params: any) {
     const queryResult = await this.prismaService.printJobs.findFirst({
       where: {
@@ -27,6 +29,8 @@ export class GetPrintJobService {
     if (!queryResult) {
       throw new HttpException('Print Job info conflict', 409);
     }
+
+    //해당 유저의 printJobs 중에 처리가 안된 printJob들의 file들
     const queryResults = await this.prismaService.printJobs.findMany({
       where: {
         UserID: params.userId,
@@ -48,6 +52,7 @@ export class GetPrintJobService {
     });
 
     const { Kiosks } = queryResult;
+    // files의 file을 printJobDto에 요구된 형태로 포멧
     const files = queryResults.map(({ Files }) => {
       return {
         id: Files.FileID,
@@ -60,10 +65,13 @@ export class GetPrintJobService {
       };
     });
 
+    // 가격 계산
     const price = await this.priceCalculator(queryResult, Kiosks);
+    // {start : '1', end : '2'} 형식으로 포멧
     const pageRanges = queryResult.PageRanges.split(',');
-    const pageRange = pageRanges.map((pr) => this.pRFormer(pr));
+    const pageRange = pageRanges.map((pr) => this.printRangesFormer(pr));
 
+    // PrintTicket으로 mapping
     const printTicket: PrintTicket = {
       version: 'v2.0',
       layout: {
@@ -78,6 +86,7 @@ export class GetPrintJobService {
       paperOrientation: queryResult.PaperOrientation as PaperOrientation,
     };
 
+    // PrintJobDto에 따라 mapping
     const printJob: PrintJobDto = {
       id: queryResult.PrintJobID,
       createdAt: queryResult.CreatedAt,
@@ -101,7 +110,7 @@ export class GetPrintJobService {
     return printJob;
   }
 
-  private pRFormer(pR: string): PageRange {
+  private printRangesFormer(pR: string): PageRange {
     if (/^[0-9]+-[0-9]+$/.test(pR)) {
       const pages = pR.split('-');
       return { start: Number(pages[0]), end: Number(pages[1]) };
@@ -109,7 +118,7 @@ export class GetPrintJobService {
     return { start: Number(pR), end: Number(pR) };
   }
 
-  private async priceCalculator(printJob: any, kiosk: any) {
+  private async priceCalculator(printJob: PrintJobs, kiosk: Kiosks) {
     if (printJob.IsColor) {
       return Number(printJob.NumPrintPages) * Number(kiosk.PriceA4Color);
     }
