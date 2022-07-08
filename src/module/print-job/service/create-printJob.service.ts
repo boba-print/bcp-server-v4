@@ -10,7 +10,7 @@ import { NUp } from '../types/NUp';
 import { PaperOrientation } from '../types/PaperOrientation';
 
 @Injectable()
-export class PrintJobService {
+export class CreatePrintJobService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(userId: string, dto: CreatePrintJobDto) {
@@ -54,8 +54,8 @@ export class PrintJobService {
     }
     //uuId 생성해야 함 내가 임의로 uuid 라이브러리 써도 되는지
     const now = new Date();
-    let expireAt = now;
-    expireAt.setDate(expireAt.getHours() + 48);
+    const expireAt = new Date();
+    expireAt.setHours(expireAt.getHours() + 48);
     const printJob: PrintJobs = {
       PrintJobID: v4(),
       CreatedAt: now,
@@ -125,20 +125,40 @@ export class PrintJobService {
     return true;
   }
 
-  private async pageRangesValidator(pageRanges: string) {
-    if (/^[0-9]+-[0-9]+$/.test(pageRanges)) {
-      const pages = pageRanges.split('-');
-      if (pages[0] > pages[1]) {
+  private async pageRangesValidator(pageRange: string) {
+    const pageRanges = pageRange.split(',');
+    for (const pageRange of pageRanges) {
+      if (/^[0-9]+-[0-9]+$/.test(pageRange)) {
+        const pages = pageRange.split('-');
+        if (pages[0] > pages[1]) {
+          return false;
+        }
+        continue;
+      } else if (/^[0-9]+$/.test(pageRange)) {
+        continue;
+      } else {
         return false;
       }
-      return true;
+    }
+    let num: string[] = [];
+    for (const pageRange of pageRanges) {
+      const page = pageRange.split('-');
+      if (page.length === 1) {
+        num.push(page[0]);
+      } else {
+        num.push(page[0]);
+        num.push(page[1]);
+      }
+    }
+    let base = '0';
+    for (const n of num) {
+      if (base > n) {
+        return false;
+      }
+      base = n;
     }
 
-    if (/^[0-9]+$/.test(pageRanges)) {
-      return true;
-    }
-
-    return false;
+    return true;
   }
 
   private async getNumPage(fileId: string) {

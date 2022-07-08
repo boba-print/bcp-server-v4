@@ -7,7 +7,7 @@ export interface PrintJobDto {
   modifiedAt: Date;
   expireAt: Date;
   userId: string;
-  numPrintPages: number;
+  numPrintPages: number | null;
   verificationNumber: string;
   ticket: PrintTicket;
   price: number;

@@ -13,13 +13,16 @@ import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from './dto/CreatePrintJob.dto';
-import { PrintJobService } from './service/print-job.service';
+import { PrintJobDto } from './dto/PrintJob.dto';
+import { CreatePrintJobService } from './service/create-printJob.service';
+import { GetPrintJobService } from './service/get-printJob.service';
 
 @Controller('users')
 export class PrintJobController {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly printJobService: PrintJobService,
+    private readonly createPrintJobService: CreatePrintJobService,
+    private readonly getPrintJobService: GetPrintJobService,
   ) {}
 
   @Get(':userId/print-jobs')
@@ -37,16 +40,7 @@ export class PrintJobController {
   @Get(':userId/print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {
-    const printJob = await this.prismaService.printJobs.findFirst({
-      where: {
-        UserID: params.userId,
-        PrintJobID: params.printJobId,
-      },
-    });
-
-    if (!printJob) {
-      throw new HttpException('printJob info conflict', 409);
-    }
+    const printJob: PrintJobDto = await this.getPrintJobService.findOne(params);
 
     return printJob;
   }
@@ -71,7 +65,7 @@ export class PrintJobController {
       throw new HttpException('printJob info conflict', 409);
     }
 
-    const printJob = await this.printJobService.create(userId, dto);
+    const printJob = await this.createPrintJobService.create(userId, dto);
     return printJob;
   }
 

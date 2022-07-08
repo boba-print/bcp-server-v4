@@ -2,11 +2,12 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { UserAuthMiddleWare } from 'src/common/middleware/user-auth.middleware';
 import { PrismaService } from 'src/service/prisma.service';
 import { PrintJobController } from './print-job.controller';
-import { PrintJobService } from './service/print-job.service';
+import { CreatePrintJobService } from './service/create-printJob.service';
+import { GetPrintJobService } from './service/get-printJob.service';
 
 @Module({
   controllers: [PrintJobController],
-  providers: [PrismaService, PrintJobService],
+  providers: [PrismaService, CreatePrintJobService, GetPrintJobService],
 })
 export class PrintJobModule {
   configure(consumer: MiddlewareConsumer) {
