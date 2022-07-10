@@ -16,14 +16,14 @@ import { PrismaService } from 'src/service/prisma.service';
 import { UpdateFileDto } from './dto/UpdateFile.dto';
 import { FileService } from './service/file.service';
 
-@Controller('users')
+@Controller('users/:userId')
 export class FileController {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly fileService: FileService,
   ) {}
 
-  @Get(':userId/files')
+  @Get('files')
   @UseGuards(UserAuthGuard)
   async findMany(@Param('userId') userId: string) {
     const files = await this.prismaService.files.findMany({
@@ -39,7 +39,7 @@ export class FileController {
     return files;
   }
 
-  @Get(':userId/files/:fileId')
+  @Get('files/:fileId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {
     const file = await this.prismaService.files.findFirst({
@@ -52,7 +52,7 @@ export class FileController {
     return file;
   }
 
-  @Patch(':userId/files/:fileId')
+  @Patch('files/:fileId')
   @UseGuards(UserAuthGuard)
   async patch(@Param() params, @Body() body: any) {
     const dto = plainToInstance(UpdateFileDto, body);
@@ -68,7 +68,7 @@ export class FileController {
     return file;
   }
 
-  @Delete(':userId/files/:fileId')
+  @Delete('files/:fileId')
   @UseGuards(UserAuthGuard)
   async remove(@Param() params) {
     const result = await this.prismaService.files.findFirst({

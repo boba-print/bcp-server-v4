@@ -18,7 +18,7 @@ import { RegexValidator } from './regex.validator';
 import { CreatePrintJobService } from './service/create-print-job.service';
 import { GetPrintJobService } from './service/get-print-job.service';
 
-@Controller('users')
+@Controller('users/:userId')
 export class PrintJobController {
   constructor(
     private readonly prismaService: PrismaService,
@@ -27,7 +27,7 @@ export class PrintJobController {
     private readonly validateRegex: RegexValidator,
   ) {}
 
-  @Get(':userId/print-jobs')
+  @Get('print-jobs')
   @UseGuards(UserAuthGuard)
   async findMany(@Param('userId') userId: string) {
     const printJobs = await this.prismaService.printJobs.findMany({
@@ -39,7 +39,7 @@ export class PrintJobController {
     return printJobs;
   }
 
-  @Get(':userId/print-jobs/:printJobId')
+  @Get('print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {
     const result = await this.prismaService.printJobs.findFirst({
@@ -59,7 +59,7 @@ export class PrintJobController {
     return printJob;
   }
 
-  @Post(':userId/print-jobs/create')
+  @Post('print-jobs/create')
   @UseGuards(UserAuthGuard)
   async create(@Param('userId') userId, @Body() body: any) {
     const dto = plainToInstance(CreatePrintJobDto, body);
@@ -88,7 +88,7 @@ export class PrintJobController {
     return printJob;
   }
 
-  @Delete(':userId/print-jobs/:printJobId')
+  @Delete('print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async remove(@Param() params) {
     const result = await this.prismaService.printJobs.findFirst({
