@@ -38,7 +38,7 @@ export class IamportService {
     const options = await this.getAuthenticatedAxiosOptions();
     const response = await axios
       .post<IamportSubscribeResponseDto>(
-        `subscribe/customer/${customerId}`,
+        `subscribe/customers/${customerId}`,
         {
           card_number: dto.cardNumber,
           expiry: dto.expiry,
@@ -48,9 +48,11 @@ export class IamportService {
         options,
       )
       .catch((err) => {
-        if (err.response || err.response.status === 401) {
+        console.log(err.request);
+        if (err.response && err.response.status === 401) {
           throw new IamportAuthorizeError(err.message);
         }
+
 
         throw new IamportUnknownError(err.message);
       });
@@ -68,7 +70,7 @@ export class IamportService {
         options,
       )
       .catch((err) => {
-        if (err.response || err.response.status === 401) {
+        if (err.response && err.response.status === 401) {
           throw new IamportAuthorizeError(err.message);
         }
 
@@ -84,7 +86,7 @@ export class IamportService {
     const response = await axios
       .post<IamportCancelResponseDto>('/payments/cancel', reqDto, options)
       .catch((err) => {
-        if (err.response || err.response.status === 401) {
+        if (err.response && err.response.status === 401) {
           throw new IamportAuthorizeError(err.message);
         }
 
@@ -118,7 +120,7 @@ export class IamportService {
   }
 
   private async getAuthenticatedAxiosOptions() {
-    if (this.isTokenAvailable) {
+    if (!this.isTokenAvailable) {
       await this.fetchToken();
     }
 

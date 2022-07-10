@@ -13,11 +13,17 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
+import { CardCreateDto } from './dto/CardCreate.dto';
+import { CreateCardDto } from './dto/CreateCard.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { CardService } from './service/card.service';
 
 @Controller('users/:userId/cards')
 export class CardController {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly cardController: CardService,
+  ) {}
 
   @Get()
   @UseGuards(UserAuthGuard)
@@ -29,6 +35,22 @@ export class CardController {
     });
 
     return cards;
+  }
+
+  @Post('create')
+  @UseGuards(UserAuthGuard)
+  async create(@Param('userId') userId: string, @Body() body: any) {
+    const dto = plainToInstance(CreateCardDto, body);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new HttpException(errors[0].toString(), 400);
+    }
+
+    try {
+      return await this.cardController.create(userId, dto);
+    } catch (err) {
+      throw new HttpException('Iamport server error: ' + err.message, err);
+    }
   }
 
   @Patch(':cardId')
@@ -65,7 +87,7 @@ export class CardController {
     return card;
   }
 
-  @Post('cards/:cardId/set-priority')
+  @Post(':cardId/set-priority')
   @UseGuards(UserAuthGuard)
   async update(@Param() params: any) {
     const result = await this.prismaService.cards.findFirst({

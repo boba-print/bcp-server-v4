@@ -32,6 +32,10 @@ export class CardService {
     let response: IamportSubscribeResponseDto;
     try {
       response = await this.iamportService.addSubscriber(customerId, dto);
+      console.log(
+        '🚀 ~ file: card.service.ts ~ line 35 ~ CardService ~ create ~ response',
+        response,
+      );
     } catch (err) {
       // TODO: 에러 처리는 AOP 를 통해 처리하는것이 좋음
       if (
@@ -43,6 +47,10 @@ export class CardService {
         console.error(err);
       }
       throw err;
+    }
+
+    if (response.code !== 0) {
+      return response;
     }
 
     const checkSum = SHA256(dto.cardNumber).toString();
