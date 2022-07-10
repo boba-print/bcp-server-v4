@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpException,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -10,16 +11,15 @@ import {
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { NotFoundError } from 'src/common/error';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { UpdateCardDto } from './dto/update-card.dto';
 
-@Controller('users/:userId')
+@Controller('users/:userId/cards')
 export class CardController {
   constructor(private readonly prismaService: PrismaService) {}
 
-  @Get('cards')
+  @Get()
   @UseGuards(UserAuthGuard)
   async findMany(@Param('userId') userId: string) {
     const cards = await this.prismaService.cards.findMany({
@@ -31,7 +31,7 @@ export class CardController {
     return cards;
   }
 
-  @Patch('cards/:cardId')
+  @Patch(':cardId')
   @UseGuards(UserAuthGuard)
   async patch(@Param() params: any, @Body() body: any) {
     const dto = plainToInstance(UpdateCardDto, body);
@@ -59,7 +59,7 @@ export class CardController {
       },
     });
     if (!card) {
-      throw new NotFoundError('Card Not Found!!');
+      throw new HttpException('Card info conflict', 404);
     }
 
     return card;
@@ -87,7 +87,7 @@ export class CardController {
       },
     });
     if (!card) {
-      throw new NotFoundError('Card Not Found!!');
+      throw new NotFoundException('Card Not Found!!');
     }
 
     const cards = await this.prismaService.cards.updateMany({
@@ -100,7 +100,7 @@ export class CardController {
       },
     });
     if (!cards) {
-      throw new NotFoundError('Cards Not Found!!');
+      throw new NotFoundException('Cards Not Found!!');
     }
 
     return card;
