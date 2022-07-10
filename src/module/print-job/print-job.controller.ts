@@ -33,6 +33,7 @@ export class PrintJobController {
     const printJobs = await this.prismaService.printJobs.findMany({
       where: {
         UserID: userId,
+        IsDeleted: 0,
       },
     });
 
@@ -46,6 +47,7 @@ export class PrintJobController {
       where: {
         UserID: params.userId,
         PrintJobID: params.printJobId,
+        IsDeleted: 0,
       },
     });
     if (!result) {
@@ -78,6 +80,7 @@ export class PrintJobController {
       where: {
         UserID: userId,
         FileID: dto.fileId,
+        IsDeleted: 0,
       },
     });
     if (!file) {
@@ -95,6 +98,7 @@ export class PrintJobController {
       where: {
         FileID: params.fileId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
 
