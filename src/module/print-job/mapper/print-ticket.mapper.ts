@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrintJobs } from '@prisma/client';
-import { range } from 'rxjs';
 import { Duplex } from '../types/Duplex';
 import { LayoutOrder } from '../types/LayoutOrder';
 import { NUp } from '../types/NUp';

@@ -1,25 +1,19 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Kiosks, PrintJobs } from '@prisma/client';
-import {
-  classToPlain,
-  instanceToPlain,
-  plainToClass,
-  plainToInstance,
-} from 'class-transformer';
 import { PrismaService } from 'src/service/prisma.service';
 import { PrintJobDto } from '../dto/PrintJob.dto';
-import { Duplex } from '../types/Duplex';
-import { LayoutOrder } from '../types/LayoutOrder';
-import { NUp } from '../types/NUp';
-import { PageFitting } from '../types/PageFitting';
-import { PageRange } from '../types/PageRange';
-import { PaperOrientation } from '../types/PaperOrientation';
-import { PrintJobErrorType } from '../types/PrintJobErrorType';
-import { PrintTicket } from '../types/PrintTicket';
+import { FileMapper } from '../mapper/file.mapper';
+import { KioskMapper } from '../mapper/kiosk.mapper';
+import { PrintTicketMapper } from '../mapper/print-ticket.mapper';
 
 @Injectable()
 export class GetPrintJobService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly printTicketMapper: PrintTicketMapper,
+    private readonly filesMapper: FileMapper,
+    private readonly kioskMapper: KioskMapper,
+  ) {}
 
   // 해당 printjob이 해당 user의 것인지 판단, kiosks 가져오기
   async findOne(userId: string, printJobId: string) {
@@ -32,17 +26,7 @@ export class GetPrintJobService {
       },
       include: {
         Kiosks: true,
-        Files: {
-          select: {
-            FileID: true,
-            CreatedAt: true,
-            ModifiedAt: true,
-            ViewName: true,
-            Size: true,
-            FileConvertedID: true,
-            ErrorType: true,
-          },
-        },
+        Files: true,
       },
       orderBy: {
         CreatedAt: 'desc',
@@ -55,38 +39,15 @@ export class GetPrintJobService {
 
     // files의 file을 printJobDto에 요구된 형태로 포멧
     const files = queryResults.map(({ Files }) => {
-      return {
-        id: Files.FileID,
-        createdAt: Files.CreatedAt,
-        modifiedAt: Files.ModifiedAt,
-        name: Files.ViewName,
-        size: Files.Size,
-        isConverted: Boolean(Files.FileConvertedID),
-        errorType: Files.ErrorType as PrintJobErrorType,
-      };
+      return this.filesMapper.mapFromRelation(Files);
     });
 
     // 가격 계산
     const price = await this.calculatePrice(queryResults, Kiosks);
-    // {start : '1', end : '2'} 형식으로 포멧
-    const pageRanges = queryResults[0].PageRanges.split(',');
-    const pageRange = pageRanges.map((pr) => this.printRangesFormer(pr));
 
     // PrintTicket으로 mapping
-
-    const printTicket: PrintTicket = {
-      version: 'v2.0',
-      layout: {
-        order: queryResults[0].LayoutOrder as LayoutOrder,
-        nUp: queryResults[0].NUp,
-      },
-      copies: queryResults[0].NumCopies,
-      duplex: queryResults[0].Duplex as Duplex,
-      fitToPage: queryResults[0].PageFitting as PageFitting,
-      isColor: Boolean(queryResults[0].IsColor),
-      pageRanges: pageRange,
-      paperOrientation: queryResults[0].PaperOrientation as PaperOrientation,
-    };
+    const printTicket = this.printTicketMapper.mapFromRelation(queryResults[0]);
+    const kiosk = this.kioskMapper.mapFromRelation(Kiosks);
 
     // PrintJobDto에 따라 mapping
     const printJob: PrintJobDto = {
@@ -99,25 +60,11 @@ export class GetPrintJobService {
       verificationNumber: queryResults[0].VerificationNumber,
       ticket: printTicket,
       price,
-      kiosk: {
-        id: Kiosks.KioskID,
-        name: Kiosks.Name,
-        description: Kiosks.Description,
-        color: Boolean(Kiosks.PriceA4Color),
-        mono: Boolean(Kiosks.PriceA4Mono),
-      },
+      kiosk,
       files,
     };
 
     return printJob;
-  }
-
-  private printRangesFormer(pR: string): PageRange {
-    if (/^[0-9]+-[0-9]+$/.test(pR)) {
-      const pages = pR.split('-');
-      return { start: Number(pages[0]), end: Number(pages[1]) };
-    }
-    return { start: Number(pR), end: Number(pR) };
   }
 
   private async calculatePrice(printJob: any, kiosk: Kiosks) {
