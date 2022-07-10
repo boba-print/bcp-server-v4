@@ -40,7 +40,6 @@ export class CreatePrintJobDto {
   @IsNumber()
   isColor: number;
 
-  @Matches(/^[0-9]+-[0-9]+$ | ^[0-9]+$/)
   @IsString()
   pageRanges: string;
 }

@@ -1,13 +1,8 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrintJobs } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from '../dto/CreatePrintJob.dto';
 import { v4 } from 'uuid';
-import { PageFitting } from '../types/PageFitting';
-import { LayoutOrder } from '../types/LayoutOrder';
-import { Duplex } from '../types/Duplex';
-import { NUp } from '../types/NUp';
-import { PaperOrientation } from '../types/PaperOrientation';
 
 @Injectable()
 export class CreatePrintJobService {
@@ -33,12 +28,8 @@ export class CreatePrintJobService {
     // random 5자리 숫자 문자열 생성
     let verificationNumber = await this.getOverlapPassword(userId, kioskId);
     if (!verificationNumber) {
-      verificationNumber = await this.generateRandomNumber();
-    }
-    //PageRanges 유효성 검사
-    const isPageRangesValidate = await this.pageRangesValidator(pageRanges);
-    if (!isPageRangesValidate) {
-      throw new HttpException('Wrongly formated', 400);
+      const randomNumber = Math.floor(Math.random() * 99999);
+      verificationNumber = await this.leadingZeros(randomNumber);
     }
 
     //uuId 생성해야 함 내가 임의로 uuid 라이브러리 써도 되는지
@@ -73,42 +64,6 @@ export class CreatePrintJobService {
     return PrintJob;
   }
 
-  private async pageRangesValidator(pageRange: string) {
-    const pageRanges = pageRange.split(',');
-    for (const pageRange of pageRanges) {
-      if (/^[0-9]+-[0-9]+$/.test(pageRange)) {
-        const pages = pageRange.split('-');
-        if (pages[0] > pages[1]) {
-          return false;
-        }
-        continue;
-      } else if (/^[0-9]+$/.test(pageRange)) {
-        continue;
-      } else {
-        return false;
-      }
-    }
-    let num: string[] = [];
-    for (const pageRange of pageRanges) {
-      const page = pageRange.split('-');
-      if (page.length === 1) {
-        num.push(page[0]);
-      } else {
-        num.push(page[0]);
-        num.push(page[1]);
-      }
-    }
-    let base = '0';
-    for (const n of num) {
-      if (base > n) {
-        return false;
-      }
-      base = n;
-    }
-
-    return true;
-  }
-
   private async getNumPage(fileId: string) {
     const queryResult = await this.prismaService.files.findUnique({
       where: {
@@ -124,33 +79,13 @@ export class CreatePrintJobService {
     });
 
     if (!queryResult) {
-      throw new HttpException('not found', 404);
+      throw new NotFoundException('not found!!');
     }
     if (!queryResult.FilesConverted) {
-      throw new HttpException('not found', 404);
+      throw new NotFoundException('not found!!');
     }
 
     return queryResult.FilesConverted.NumPages;
-  }
-
-  private async generateRandomNumber() {
-    const numbers = '0123456789';
-    let verificationNumber = '';
-    while (true) {
-      verificationNumber = '';
-      for (let i = 0; i < 5; i++) {
-        verificationNumber += numbers.charAt(Math.floor(Math.random() * 10));
-      }
-      const queryResult = await this.prismaService.printJobs.findFirst({
-        where: {
-          VerificationNumber: verificationNumber,
-        },
-      });
-      if (!queryResult) {
-        break;
-      }
-    }
-    return verificationNumber;
   }
 
   private async getOverlapPassword(userId: string, kioskId: string) {
@@ -158,11 +93,22 @@ export class CreatePrintJobService {
       where: {
         UserID: userId,
         KioskID: kioskId,
+        IsDeleted: 0,
       },
     });
     if (!printJob) {
       return;
     }
     return printJob.VerificationNumber;
+  }
+
+  private async leadingZeros(num: number) {
+    let zero = '';
+    const n = num.toString();
+
+    if (n.length < 5) {
+      for (var i = 0; i < 5 - n.length; i++) zero += '0';
+    }
+    return zero + n;
   }
 }

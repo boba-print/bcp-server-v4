@@ -16,12 +16,11 @@ export class GetPrintJobService {
   ) {}
 
   // 해당 printjob이 해당 user의 것인지 판단, kiosks 가져오기
-  async findOne(userId: string, printJobId: string) {
+  async findOne(userId: string) {
     //해당 유저의 printJobs 중에 처리가 안된 printJob들의 file들
     const queryResults = await this.prismaService.printJobs.findMany({
       where: {
         UserID: userId,
-        PrintJobID: printJobId,
         IsDeleted: 0,
       },
       include: {

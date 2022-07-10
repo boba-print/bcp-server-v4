@@ -14,6 +14,7 @@ import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from './dto/CreatePrintJob.dto';
 import { PrintJobDto } from './dto/PrintJob.dto';
+import { ValidateRegex } from './regex.validator';
 import { CreatePrintJobService } from './service/create-print-job.service';
 import { GetPrintJobService } from './service/get-print-job.service';
 
@@ -23,6 +24,7 @@ export class PrintJobController {
     private readonly prismaService: PrismaService,
     private readonly createPrintJobService: CreatePrintJobService,
     private readonly getPrintJobService: GetPrintJobService,
+    private readonly validateRegex: ValidateRegex,
   ) {}
 
   @Get(':userId/print-jobs')
@@ -40,9 +42,18 @@ export class PrintJobController {
   @Get(':userId/print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {
+    const result = await this.prismaService.printJobs.findFirst({
+      where: {
+        UserID: params.userId,
+        PrintJobID: params.printJobId,
+      },
+    });
+    if (!result) {
+      throw new HttpException('PrintZone info conflict', 409);
+    }
+
     const printJob: PrintJobDto = await this.getPrintJobService.findOne(
       params.userId,
-      params.printJobId,
     );
 
     return printJob;
@@ -66,6 +77,11 @@ export class PrintJobController {
     });
     if (!files) {
       throw new HttpException('printJob info conflict', 409);
+    }
+
+    const result = await this.validateRegex.validatePageRange(dto.pageRanges);
+    if (!result) {
+      throw new HttpException('Badly formed', 400);
     }
 
     const printJob = await this.createPrintJobService.create(userId, dto);
