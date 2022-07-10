@@ -11,6 +11,7 @@ export class FileService {
       where: {
         FileID: params.fileId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
 

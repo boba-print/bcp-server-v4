@@ -29,6 +29,7 @@ export class FileController {
     const files = await this.prismaService.files.findMany({
       where: {
         UserID: userId,
+        IsDeleted: 0,
       },
     });
 
@@ -46,6 +47,7 @@ export class FileController {
       where: {
         UserID: params.userId,
         FileID: params.fileId,
+        IsDeleted: 0,
       },
     });
 
@@ -75,6 +77,7 @@ export class FileController {
       where: {
         FileID: params.fileId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
 

@@ -75,6 +75,7 @@ export class UserService {
     const queryResult = await this.prismaService.users.findFirst({
       where: {
         Email: email,
+        IsDeleted: 0,
       },
     });
 
@@ -92,6 +93,7 @@ export class UserService {
     const queryResult = await this.prismaService.users.findFirst({
       where: {
         PhoneNumber: phoneNumber,
+        IsDeleted: 0,
       },
     });
 

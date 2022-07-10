@@ -342,3 +342,15 @@ model Notices {
   ActionUrl  String?  @db.VarChar(400)
   Priority   Int
 }
+
+model Coupons {
+  CouponID    String    @id @db.VarChar(64)
+  CreatedAt   DateTime  @default(now()) @db.DateTime(0)
+  ModifiedAt  DateTime  @default(now()) @db.DateTime(0)
+  UsedAt      DateTime? @db.DateTime(0)
+  Name        String    @db.VarChar(40)
+  Description String    @db.VarChar(150)
+  Amount      Int       @db.UnsignedInt
+  UsedUserID  String?   @db.VarChar(64)
+  ExpireAt    DateTime  @db.DateTime(0)
+}
