@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpException,
+  NotFoundException,
   Param,
   Patch,
   Query,
@@ -32,8 +33,8 @@ export class FileController {
       },
     });
 
-    if (!files) {
-      throw new HttpException('No files', 404);
+    if (!files.length) {
+      throw new NotFoundException('not found!!');
     }
 
     return files;
