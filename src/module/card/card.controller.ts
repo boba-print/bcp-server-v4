@@ -1,6 +1,8 @@
+import { callErrorFromStatus } from '@grpc/grpc-js/build/src/call';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   NotFoundException,
@@ -17,12 +19,14 @@ import { CardCreateDto } from './dto/CardCreate.dto';
 import { CreateCardDto } from './dto/CreateCard.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardService } from './service/card.service';
+import { IamportService } from './service/iamport.service';
 
 @Controller('users/:userId/cards')
 export class CardController {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly cardController: CardService,
+    private readonly cardService: CardService,
+    private readonly iamportService: IamportService,
   ) {}
 
   @Get()
@@ -47,10 +51,19 @@ export class CardController {
     }
 
     try {
-      return await this.cardController.create(userId, dto);
+      return await this.cardService.create(userId, dto);
     } catch (err) {
       throw new HttpException('Iamport server error: ' + err.message, err);
     }
+  }
+
+  @Delete(':cardId')
+  @UseGuards(UserAuthGuard)
+  async remove(
+    @Param('userId') userId: string,
+    @Param('cardId') cardId: string,
+  ) {
+    return await this.cardService.remove(userId, cardId);
   }
 
   @Patch(':cardId')

@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   IamportAuthorizeError,
   IamportGetTokenError,
-  IamportSubscribeError,
   IamportUnknownError,
 } from '../error';
 import { IamportSubscribeResponseDto } from '../dto/IamportSubscribeResponse.dto';
@@ -14,6 +13,7 @@ import { response } from 'express';
 import { Cards } from '@prisma/client';
 import { SHA256 } from 'crypto-js';
 import { Priority } from '../type';
+import { NotFoundError } from 'src/common/error';
 
 @Injectable()
 export class CardService {
@@ -54,9 +54,6 @@ export class CardService {
     }
 
     const checkSum = SHA256(dto.cardNumber).toString();
-    const billingKey = SHA256(
-      `${userId}-${checkSum}-${dto.expiry}-${dto.birth}-${dto.pwd2digit}-${this.NONCE}`,
-    ).toString();
     const cardRelation: Cards = {
       CardID: cardId,
       CreatedAt: new Date(),
@@ -67,7 +64,7 @@ export class CardService {
       MaskedNumber: response.response.card_number,
       Priority: Priority.First,
       VendorCode: response.response.card_code,
-      BillingKey: billingKey,
+      BillingKey: customerId,
       UserID: userId,
     };
 
@@ -76,5 +73,26 @@ export class CardService {
     });
 
     return response;
+  }
+
+  async remove(userId: string, cardId: string) {
+    const card = await this.prismaService.cards.findFirst({
+      where: {
+        UserID: userId,
+        CardID: cardId,
+      },
+    });
+
+    if (!card) {
+      throw new NotFoundError('No corresponding card');
+    }
+
+    await this.prismaService.cards.delete({
+      where: {
+        CardID: cardId,
+      },
+    });
+
+    return await this.iamportService.remove(card.BillingKey);
   }
 }

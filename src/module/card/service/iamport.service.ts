@@ -13,25 +13,26 @@ import { IamportPurchaseRequestDto } from '../dto/IamportPurchaseRequest.dto';
 import { IamportPurchaseResponseDto } from '../dto/IamportPurchaseResponse.dto';
 import { IamportCancelResponseDto } from '../dto/IamportCancelResponse.dto';
 import { IamportCancelRequestDto } from '../dto/IamportCancelRequest.dto';
+import { IamportCardDeleteResponseDto } from '../dto/IamportCardDeleteResponse.dto';
 
 @Injectable()
 export class IamportService {
   private BASE_URL = 'https://api.iamport.kr';
-  private IMP_REST_API: string;
-  private IMP_API_SECRET: string;
+  private IAMPORT_KEY: string;
+  private IAMPORT_SECRET: string;
 
   private accessToken: string | null = null;
   private expireAt: Date;
 
   constructor() {
-    const { IMP_CODE, IMP_REST_API, IMP_API_SECRET } = process.env;
+    const { IAMPORT_KEY, IAMPORT_SECRET } = process.env;
 
-    if (!IMP_CODE || !IMP_REST_API || !IMP_API_SECRET) {
+    if (!IAMPORT_KEY || !IAMPORT_SECRET) {
       throw new InvalidEnv('Iamport env missed');
     }
 
-    this.IMP_REST_API = IMP_REST_API;
-    this.IMP_API_SECRET = IMP_API_SECRET;
+    this.IAMPORT_KEY = IAMPORT_KEY;
+    this.IAMPORT_SECRET = IAMPORT_SECRET;
   }
 
   async addSubscriber(customerId: string, dto: CreateCardDto) {
@@ -52,8 +53,6 @@ export class IamportService {
         if (err.response && err.response.status === 401) {
           throw new IamportAuthorizeError(err.message);
         }
-
-
         throw new IamportUnknownError(err.message);
       });
 
@@ -97,13 +96,32 @@ export class IamportService {
     return data;
   }
 
+  async remove(customerUid: string) {
+    const options = await this.getAuthenticatedAxiosOptions();
+    const response = await axios
+      .delete<IamportCardDeleteResponseDto>(
+        `subscribe/customers/${customerUid}`,
+        options,
+      )
+      .catch((err) => {
+        if (err.response && err.response.status === 401) {
+          throw new IamportAuthorizeError(err.message);
+        }
+
+        throw new IamportUnknownError(err.message);
+      });
+
+    const { data } = response;
+    return data;
+  }
+
   private async fetchToken() {
     const response = await axios
       .post<IamportGetTokenResponse>(
         'users/getToken',
         {
-          imp_key: this.IMP_REST_API,
-          imp_secret: this.IMP_API_SECRET,
+          imp_key: this.IAMPORT_KEY,
+          imp_secret: this.IAMPORT_SECRET,
         },
         { baseURL: this.BASE_URL },
       )
