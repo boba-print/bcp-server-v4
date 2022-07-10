@@ -119,6 +119,7 @@ export class UserController {
     const printOrders = await this.printOrderService.findMany(
       {
         UserID: userId,
+        IsDeleted: 0,
       },
       0,
       numLimit,
@@ -206,6 +207,8 @@ export class UserController {
       where: {
         Email: existParams.Email ?? undefined,
         PhoneNumber: existParams.PhoneNumber ?? undefined,
+        IsDeleted: 0,
+        IsDisabled: 0,
       },
     });
 

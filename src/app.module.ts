@@ -13,6 +13,7 @@ import { PrintJobModule } from './module/print-job/print-job.module';
 import { FileModule } from './module/file/file.module';
 import { CardModule } from './module/card/card.module';
 import { PrintModule } from './module/print/print.module';
+import { CouponModule } from './module/coupon/coupon.module';
 
 @Module({
   controllers: [AppController],
@@ -25,6 +26,7 @@ import { PrintModule } from './module/print/print.module';
     FileModule,
     CardModule,
     PrintModule,
+    CouponModule,
   ],
 })
 export class AppModule implements NestModule {
