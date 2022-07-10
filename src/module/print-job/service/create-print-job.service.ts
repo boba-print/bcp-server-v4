@@ -31,9 +31,9 @@ export class CreatePrintJobService {
     const numPrintPages = await this.getNumPage(fileId);
 
     // random 5자리 숫자 문자열 생성
-    let verificationNumber = await this.checkOverlapPassword(userId, kioskId);
+    let verificationNumber = await this.getOverlapPassword(userId, kioskId);
     if (!verificationNumber) {
-      verificationNumber = await this.randomNumGenerator();
+      verificationNumber = await this.generateRandomNumber();
     }
     //PageRanges 유효성 검사
     const isPageRangesValidate = await this.pageRangesValidator(pageRanges);
@@ -41,17 +41,6 @@ export class CreatePrintJobService {
       throw new HttpException('Wrongly formated', 400);
     }
 
-    //Enum으로 유효성 검사
-    const isValidateByEnum = await this.validatorWithEnum({
-      pageFitting,
-      duplex,
-      nUp,
-      layoutOrder,
-      paperOrientation,
-    });
-    if (!isValidateByEnum) {
-      throw new HttpException('Wrongly formated', 400);
-    }
     //uuId 생성해야 함 내가 임의로 uuid 라이브러리 써도 되는지
     const now = new Date();
     const expireAt = new Date();
@@ -82,47 +71,6 @@ export class CreatePrintJobService {
     });
 
     return PrintJob;
-  }
-
-  private async validatorWithEnum(props: any) {
-    const { pageFitting, layoutOrder, duplex, nUp, paperOrientation } = props;
-    const pageFittings = Object.values(PageFitting);
-    const layoutOrders = Object.values(LayoutOrder);
-    const duplexs = Object.values(Duplex);
-    const nUps = Object.values(NUp);
-    const paperOrientations = Object.values(PaperOrientation);
-    let count = 0;
-    for (const value of pageFittings) {
-      if (value === pageFitting) {
-        count++;
-      }
-    }
-    for (const value of layoutOrders) {
-      if (value === layoutOrder) {
-        count++;
-      }
-    }
-
-    for (const value of duplexs) {
-      if (value === duplex) {
-        count++;
-      }
-    }
-
-    for (const value of nUps) {
-      if (value === nUp) {
-        count++;
-      }
-    }
-    for (const value of paperOrientations) {
-      if (value === paperOrientation) {
-        count++;
-      }
-    }
-    if (count !== 5) {
-      return false;
-    }
-    return true;
   }
 
   private async pageRangesValidator(pageRange: string) {
@@ -185,7 +133,7 @@ export class CreatePrintJobService {
     return queryResult.FilesConverted.NumPages;
   }
 
-  private async randomNumGenerator() {
+  private async generateRandomNumber() {
     const numbers = '0123456789';
     let verificationNumber = '';
     while (true) {
@@ -205,7 +153,7 @@ export class CreatePrintJobService {
     return verificationNumber;
   }
 
-  private async checkOverlapPassword(userId: string, kioskId: string) {
+  private async getOverlapPassword(userId: string, kioskId: string) {
     const printJob = await this.prismaService.printJobs.findFirst({
       where: {
         UserID: userId,

@@ -1,13 +1,9 @@
-import {
-  IsEnum,
-  IsNumber,
-  IsNumberString,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsNumber, IsString, Matches, Max, Min } from 'class-validator';
+import { Duplex } from '../types/Duplex';
+import { LayoutOrder } from '../types/LayoutOrder';
+import { NUp } from '../types/NUp';
+import { PageFitting } from '../types/PageFitting';
+import { PaperOrientation } from '../types/PaperOrientation';
 
 export class CreatePrintJobDto {
   @IsString()
@@ -21,24 +17,30 @@ export class CreatePrintJobDto {
   @IsNumber()
   numCopies: number;
 
+  @IsEnum(PageFitting)
   @IsString()
   pageFitting: string;
 
+  @IsEnum(Duplex)
   @IsString()
   duplex: string;
 
+  @IsEnum(NUp)
   @IsNumber()
   nUp: number;
 
+  @IsEnum(LayoutOrder)
   @IsString()
   layoutOrder: string;
 
+  @IsEnum(PaperOrientation)
   @IsString()
   paperOrientation: string;
 
   @IsNumber()
   isColor: number;
 
+  @Matches(/^[0-9]+-[0-9]+$ | ^[0-9]+$/)
   @IsString()
   pageRanges: string;
 }

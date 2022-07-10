@@ -14,8 +14,8 @@ import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from './dto/CreatePrintJob.dto';
 import { PrintJobDto } from './dto/PrintJob.dto';
-import { CreatePrintJobService } from './service/create-printJob.service';
-import { GetPrintJobService } from './service/get-printJob.service';
+import { CreatePrintJobService } from './service/create-print-job.service';
+import { GetPrintJobService } from './service/get-print-job.service';
 
 @Controller('users')
 export class PrintJobController {
@@ -40,7 +40,10 @@ export class PrintJobController {
   @Get(':userId/print-jobs/:printJobId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {
-    const printJob: PrintJobDto = await this.getPrintJobService.findOne(params);
+    const printJob: PrintJobDto = await this.getPrintJobService.findOne(
+      params.userId,
+      params.printJobId,
+    );
 
     return printJob;
   }

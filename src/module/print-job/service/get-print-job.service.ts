@@ -1,5 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Kiosks, PrintJobs } from '@prisma/client';
+import {
+  classToPlain,
+  instanceToPlain,
+  plainToClass,
+  plainToInstance,
+} from 'class-transformer';
 import { PrismaService } from 'src/service/prisma.service';
 import { PrintJobDto } from '../dto/PrintJob.dto';
 import { Duplex } from '../types/Duplex';
@@ -16,27 +22,16 @@ export class GetPrintJobService {
   constructor(private readonly prismaService: PrismaService) {}
 
   // 해당 printjob이 해당 user의 것인지 판단, kiosks 가져오기
-  async findOne(params: any) {
-    const queryResult = await this.prismaService.printJobs.findFirst({
-      where: {
-        UserID: params.userId,
-        PrintJobID: params.printJobId,
-      },
-      include: {
-        Kiosks: true,
-      },
-    });
-    if (!queryResult) {
-      throw new HttpException('Print Job info conflict', 409);
-    }
-
+  async findOne(userId: string, printJobId: string) {
     //해당 유저의 printJobs 중에 처리가 안된 printJob들의 file들
     const queryResults = await this.prismaService.printJobs.findMany({
       where: {
-        UserID: params.userId,
+        UserID: userId,
+        PrintJobID: printJobId,
         IsDeleted: 0,
       },
       include: {
+        Kiosks: true,
         Files: {
           select: {
             FileID: true,
@@ -49,9 +44,15 @@ export class GetPrintJobService {
           },
         },
       },
+      orderBy: {
+        CreatedAt: 'desc',
+      },
     });
+    if (!queryResults) {
+      throw new HttpException('printJob info conflict', 409);
+    }
+    const { Kiosks } = queryResults[0];
 
-    const { Kiosks } = queryResult;
     // files의 file을 printJobDto에 요구된 형태로 포멧
     const files = queryResults.map(({ Files }) => {
       return {
@@ -66,35 +67,36 @@ export class GetPrintJobService {
     });
 
     // 가격 계산
-    const price = await this.priceCalculator(queryResult, Kiosks);
+    const price = await this.calculatePrice(queryResults, Kiosks);
     // {start : '1', end : '2'} 형식으로 포멧
-    const pageRanges = queryResult.PageRanges.split(',');
+    const pageRanges = queryResults[0].PageRanges.split(',');
     const pageRange = pageRanges.map((pr) => this.printRangesFormer(pr));
 
     // PrintTicket으로 mapping
+
     const printTicket: PrintTicket = {
       version: 'v2.0',
       layout: {
-        order: queryResult.LayoutOrder as LayoutOrder,
-        nUp: queryResult.NUp as NUp,
+        order: queryResults[0].LayoutOrder as LayoutOrder,
+        nUp: queryResults[0].NUp,
       },
-      copies: queryResult.NumCopies,
-      duplex: queryResult.Duplex as Duplex,
-      fitToPage: queryResult.PageFitting as PageFitting,
-      isColor: Boolean(queryResult.IsColor),
+      copies: queryResults[0].NumCopies,
+      duplex: queryResults[0].Duplex as Duplex,
+      fitToPage: queryResults[0].PageFitting as PageFitting,
+      isColor: Boolean(queryResults[0].IsColor),
       pageRanges: pageRange,
-      paperOrientation: queryResult.PaperOrientation as PaperOrientation,
+      paperOrientation: queryResults[0].PaperOrientation as PaperOrientation,
     };
 
     // PrintJobDto에 따라 mapping
     const printJob: PrintJobDto = {
-      id: queryResult.PrintJobID,
-      createdAt: queryResult.CreatedAt,
-      modifiedAt: queryResult.ModifiedAt,
-      expireAt: queryResult.ExpireAt,
-      userId: queryResult.UserID,
-      numPrintPages: queryResult.NumPrintPages,
-      verificationNumber: queryResult.VerificationNumber,
+      id: queryResults[0].PrintJobID,
+      createdAt: queryResults[0].CreatedAt,
+      modifiedAt: queryResults[0].ModifiedAt,
+      expireAt: queryResults[0].ExpireAt,
+      userId: queryResults[0].UserID,
+      numPrintPages: queryResults[0].NumPrintPages,
+      verificationNumber: queryResults[0].VerificationNumber,
       ticket: printTicket,
       price,
       kiosk: {
@@ -118,7 +120,7 @@ export class GetPrintJobService {
     return { start: Number(pR), end: Number(pR) };
   }
 
-  private async priceCalculator(printJob: PrintJobs, kiosk: Kiosks) {
+  private async calculatePrice(printJob: any, kiosk: Kiosks) {
     if (printJob.IsColor) {
       return Number(printJob.NumPrintPages) * Number(kiosk.PriceA4Color);
     }
