@@ -4,10 +4,7 @@ import axios from 'axios';
 import { InvalidEnv } from 'src/common/error';
 import {
   IamportAuthorizeError,
-  IamportCancelError,
   IamportGetTokenError,
-  IamportPurchaseError,
-  IamportSubscribeError,
   IamportUnknownError,
 } from '../error';
 import { IamportGetTokenResponse } from '../dto/IamportGetTokenResponse.dto';
