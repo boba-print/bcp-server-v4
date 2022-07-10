@@ -1,8 +1,8 @@
 export enum NUp {
-  one = 1,
-  two = 2,
-  four = 4,
-  six = 6,
-  eight = 8,
-  nine = 9,
+  One = 1,
+  Two = 2,
+  Four = 4,
+  Six = 6,
+  Eight = 8,
+  Nine = 9,
 }
