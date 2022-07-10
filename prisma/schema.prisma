@@ -139,6 +139,7 @@ model PrintJobs {
   PrintJobID          String                @id @db.VarChar(64)
   CreatedAt           DateTime              @db.DateTime(0)
   ModifiedAt          DateTime              @db.DateTime(0)
+  ExpireAt            DateTime              @db.DateTime(0)
   IsDeleted           Int
   KioskID             String                @db.VarChar(45)
   UserID              String                @db.VarChar(45)

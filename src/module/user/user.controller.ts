@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Param,
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -17,14 +19,20 @@ import { PhoneAuthSessionService } from '../auth/service/phone-auth-session.serv
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { IsUserExistsDto } from './dto/IsUserExists.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
+import { PrintOrderService } from './service/print-order.service';
 import { UserService } from './service/user.service';
+import * as admin from 'firebase-admin';
+import { UserAuthRequest } from 'src/common/interface/UserAuthRequest';
+import { AlarmService } from './service/alarm.service';
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly prismaService: PrismaService,
+    private readonly printOrderService: PrintOrderService,
     private readonly phoneAuthSessionService: PhoneAuthSessionService,
+    private readonly alarmService: AlarmService,
   ) {}
 
   @Post('create')
@@ -55,54 +63,101 @@ export class UserController {
     return user;
   }
 
-  @Get(':id')
+  @Get(':userId')
   @UseGuards(UserAuthGuard)
   async findUnique(
-    @Param('id')
-    id: string,
+    @Param('userId')
+    userId: string,
   ) {
     const user = await this.prismaService.users.findUnique({
       where: {
-        UserID: id,
+        UserID: userId,
       },
     });
     return user;
   }
 
-  @Get(':id/point-transactions')
   @UseGuards(UserAuthGuard)
-  async findUserPointTranscations(
-    @Param('id')
-    id: string,
+  @Get(':userId/alarms')
+  async getRecent(
+    @Req()
+    req: UserAuthRequest,
     @Query('n')
     n: string,
   ) {
+    // TODO: 현재는 프린트 내역만 알람으로 가져온다. 추후에 공지사항과 기타 알림 기능도 알람에 포함되어야 함.
+    const { user } = req;
+
     let numLimit: number;
-    // TODO: parseInt 는 throw 하는 경우가 없는지 확인하기
     try {
       numLimit = parseInt(n);
     } catch (err) {
+      console.warn(
+        '[AlarmController.getRecent] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+    return this.alarmService.getAlarms(user, numLimit);
+  }
+
+  @Get(':userId/print-orders')
+  @UseGuards(UserAuthGuard)
+  async findUserPrintOrders(
+    @Param('userId')
+    userId: string,
+    @Query('n')
+    n: string,
+  ) {
+    let numLimit = parseInt(n);
+    if (isNaN(numLimit)) {
+      console.warn(
+        '[UserController.findUserPrintOrders] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+
+    const printOrders = await this.printOrderService.findMany(
+      {
+        UserID: userId,
+      },
+      0,
+      numLimit,
+    );
+
+    return printOrders;
+  }
+
+  @Get(':userId/point-transactions')
+  @UseGuards(UserAuthGuard)
+  async findUserPointTranscations(
+    @Param('userId')
+    userId: string,
+    @Query('n')
+    n: string,
+  ) {
+    let numLimit = parseInt(n);
+    if (isNaN(numLimit)) {
       console.warn(
         '[UserController.findUserPointTranscations] parsing number error, set to default 10',
       );
       numLimit = 10;
     }
-    if (isNaN(numLimit)) {
-      numLimit = 10;
-    }
 
     const queryResult = await this.prismaService.pointTransactions.findMany({
       where: {
-        UserID: id,
+        UserID: userId,
       },
       take: numLimit,
+      orderBy: {
+        CreatedAt: 'desc',
+      },
     });
     return queryResult;
   }
 
-  @Patch(':id')
+  @Patch(':userId')
   @UseGuards(UserAuthGuard)
-  async patch(@Param('id') id: string, @Body() body: any) {
+  async patch(@Param('userId') userId: string, @Body() body: any) {
     const dto = plainToInstance(UpdateUserDto, body);
     const errors = await validate(dto);
     if (errors.length > 0) {
@@ -132,7 +187,7 @@ export class UserController {
       }
     }
 
-    const user = await this.userService.update(id, dto);
+    const user = await this.userService.update(userId, dto);
     return user;
   }
 
@@ -163,5 +218,23 @@ export class UserController {
     }
 
     return result;
+  }
+
+  @Delete(':userId')
+  async remove(@Param('userId') userId: string) {
+    const userRecord = await admin.auth().updateUser(userId, {
+      disabled: true,
+    });
+    const { uid } = userRecord;
+    const user = await this.prismaService.users.update({
+      where: {
+        UserID: uid,
+      },
+      data: {
+        IsDeleted: 1,
+      },
+    });
+
+    return user;
   }
 }
