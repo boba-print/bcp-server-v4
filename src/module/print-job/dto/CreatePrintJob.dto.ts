@@ -40,6 +40,7 @@ export class CreatePrintJobDto {
   @IsNumber()
   isColor: number;
 
+  //TODO: regexp 를 최대한 활용한 validation
   @IsString()
   pageRanges: string;
 }

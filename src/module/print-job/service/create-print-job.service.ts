@@ -2,7 +2,8 @@ import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrintJobs } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from '../dto/CreatePrintJob.dto';
-import { v4 } from 'uuid';
+import { v4 as uuidV4 } from 'uuid';
+import { NotFoundError } from 'src/common/error';
 
 @Injectable()
 export class CreatePrintJobService {
@@ -26,10 +27,12 @@ export class CreatePrintJobService {
     const numPrintPages = await this.getNumPage(fileId);
 
     // random 5자리 숫자 문자열 생성
-    let verificationNumber = await this.getOverlapPassword(userId, kioskId);
+    let verificationNumber = await this.getOverlapVerificationNumber(
+      userId,
+      kioskId,
+    );
     if (!verificationNumber) {
-      const randomNumber = Math.floor(Math.random() * 99999);
-      verificationNumber = await this.leadingZeros(randomNumber);
+      verificationNumber = Math.floor(Math.random() * 90000 + 10000).toString();
     }
 
     //uuId 생성해야 함 내가 임의로 uuid 라이브러리 써도 되는지
@@ -37,7 +40,7 @@ export class CreatePrintJobService {
     const expireAt = new Date();
     expireAt.setHours(expireAt.getHours() + 48);
     const printJob: PrintJobs = {
-      PrintJobID: v4(),
+      PrintJobID: uuidV4(),
       CreatedAt: now,
       ModifiedAt: now,
       ExpireAt: expireAt,
@@ -79,16 +82,16 @@ export class CreatePrintJobService {
     });
 
     if (!queryResult) {
-      throw new NotFoundException('not found!!');
+      throw new NotFoundError('not found!!');
     }
     if (!queryResult.FilesConverted) {
-      throw new NotFoundException('not found!!');
+      throw new NotFoundError('not found!!');
     }
 
     return queryResult.FilesConverted.NumPages;
   }
 
-  private async getOverlapPassword(userId: string, kioskId: string) {
+  private async getOverlapVerificationNumber(userId: string, kioskId: string) {
     const printJob = await this.prismaService.printJobs.findFirst({
       where: {
         UserID: userId,
@@ -100,15 +103,5 @@ export class CreatePrintJobService {
       return;
     }
     return printJob.VerificationNumber;
-  }
-
-  private async leadingZeros(num: number) {
-    let zero = '';
-    const n = num.toString();
-
-    if (n.length < 5) {
-      for (var i = 0; i < 5 - n.length; i++) zero += '0';
-    }
-    return zero + n;
   }
 }

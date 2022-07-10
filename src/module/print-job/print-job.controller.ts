@@ -14,7 +14,7 @@ import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreatePrintJobDto } from './dto/CreatePrintJob.dto';
 import { PrintJobDto } from './dto/PrintJob.dto';
-import { ValidateRegex } from './regex.validator';
+import { RegexValidator } from './regex.validator';
 import { CreatePrintJobService } from './service/create-print-job.service';
 import { GetPrintJobService } from './service/get-print-job.service';
 
@@ -24,7 +24,7 @@ export class PrintJobController {
     private readonly prismaService: PrismaService,
     private readonly createPrintJobService: CreatePrintJobService,
     private readonly getPrintJobService: GetPrintJobService,
-    private readonly validateRegex: ValidateRegex,
+    private readonly validateRegex: RegexValidator,
   ) {}
 
   @Get(':userId/print-jobs')
@@ -68,20 +68,20 @@ export class PrintJobController {
       throw new HttpException(errors[0].toString(), 400);
     }
 
+    const result = await this.validateRegex.validatePageRange(dto.pageRanges);
+    if (!result) {
+      throw new HttpException('Badly formed', 400);
+    }
+
     // 해당 파일이 해당 유저의 파일인지 판별
-    const files = await this.prismaService.files.findFirst({
+    const file = await this.prismaService.files.findFirst({
       where: {
         UserID: userId,
         FileID: dto.fileId,
       },
     });
-    if (!files) {
+    if (!file) {
       throw new HttpException('printJob info conflict', 409);
-    }
-
-    const result = await this.validateRegex.validatePageRange(dto.pageRanges);
-    if (!result) {
-      throw new HttpException('Badly formed', 400);
     }
 
     const printJob = await this.createPrintJobService.create(userId, dto);

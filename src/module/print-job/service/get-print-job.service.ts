@@ -34,7 +34,8 @@ export class GetPrintJobService {
     if (!queryResults) {
       throw new HttpException('printJob info conflict', 409);
     }
-    const { Kiosks } = queryResults[0];
+    const queryResult = queryResults[0];
+    const { Kiosks } = queryResult;
 
     // files의 file을 printJobDto에 요구된 형태로 포멧
     const files = queryResults.map(({ Files }) => {
@@ -50,13 +51,13 @@ export class GetPrintJobService {
 
     // PrintJobDto에 따라 mapping
     const printJob: PrintJobDto = {
-      id: queryResults[0].PrintJobID,
-      createdAt: queryResults[0].CreatedAt,
-      modifiedAt: queryResults[0].ModifiedAt,
-      expireAt: queryResults[0].ExpireAt,
-      userId: queryResults[0].UserID,
-      numPrintPages: queryResults[0].NumPrintPages,
-      verificationNumber: queryResults[0].VerificationNumber,
+      id: queryResult.PrintJobID,
+      createdAt: queryResult.CreatedAt,
+      modifiedAt: queryResult.ModifiedAt,
+      expireAt: queryResult.ExpireAt,
+      userId: queryResult.UserID,
+      numPrintPages: queryResult.NumPrintPages,
+      verificationNumber: queryResult.VerificationNumber,
       ticket: printTicket,
       price,
       kiosk,

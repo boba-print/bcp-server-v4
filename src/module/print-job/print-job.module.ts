@@ -5,7 +5,7 @@ import { FileMapper } from './mapper/file.mapper';
 import { KioskMapper } from './mapper/kiosk.mapper';
 import { PrintTicketMapper } from './mapper/print-ticket.mapper';
 import { PrintJobController } from './print-job.controller';
-import { ValidateRegex } from './regex.validator';
+import { RegexValidator } from './regex.validator';
 import { CreatePrintJobService } from './service/create-print-job.service';
 import { GetPrintJobService } from './service/get-print-job.service';
 
@@ -18,7 +18,7 @@ import { GetPrintJobService } from './service/get-print-job.service';
     PrintTicketMapper,
     FileMapper,
     KioskMapper,
-    ValidateRegex,
+    RegexValidator,
   ],
 })
 export class PrintJobModule {
