@@ -1,6 +1,6 @@
 import { IsCreditCard, IsString, Length, Matches } from 'class-validator';
 
-export class CardCreateDto {
+export class CreateCardDto {
   @IsCreditCard()
   @IsString()
   cardNumber: string;

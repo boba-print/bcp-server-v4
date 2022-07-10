@@ -1,12 +1,12 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 
-@Controller('users')
+@Controller('users/:userId/cards')
 export class CardController {
   constructor(private readonly prismaService: PrismaService) {}
 
-  @Get(':userId/cards')
+  @Get(':cardId')
   @UseGuards(UserAuthGuard)
   async findMany(@Param('userId') userId: string) {
     const cards = await this.prismaService.cards.findMany({

@@ -1,4 +1,4 @@
-export interface IamportSubscribeResponseDto {
+export interface IamportCardDeleteResponseDto {
   code: number;
   message: string;
   response: {

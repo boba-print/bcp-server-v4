@@ -1,10 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { CardCreateDto } from '../dto/CardCreate.dto';
+import { CreateCardDto } from '../dto/CreateCard.dto';
 import axios from 'axios';
 import { InvalidEnv } from 'src/common/error';
-import { IamportGetTokenError, IamportSubscribeError } from '../error';
+import {
+  IamportAuthorizeError,
+  IamportCancelError,
+  IamportGetTokenError,
+  IamportPurchaseError,
+  IamportSubscribeError,
+  IamportUnknownError,
+} from '../error';
 import { IamportGetTokenResponse } from '../dto/IamportGetTokenResponse.dto';
 import { IamportSubscribeResponseDto } from '../dto/IamportSubscribeResponse.dto';
+import { IamportPurchaseRequestDto } from '../dto/IamportPurchaseRequest.dto';
+import { IamportPurchaseResponseDto } from '../dto/IamportPurchaseResponse.dto';
+import { IamportCancelResponseDto } from '../dto/IamportCancelResponse.dto';
+import { IamportCancelRequestDto } from '../dto/IamportCancelRequest.dto';
 
 @Injectable()
 export class IamportService {
@@ -26,7 +37,7 @@ export class IamportService {
     this.IMP_API_SECRET = IMP_API_SECRET;
   }
 
-  async addSubscriber(customerId: string, dto: CardCreateDto) {
+  async addSubscriber(customerId: string, dto: CreateCardDto) {
     const options = await this.getAuthenticatedAxiosOptions();
     const response = await axios
       .post<IamportSubscribeResponseDto>(
@@ -39,15 +50,51 @@ export class IamportService {
         },
         options,
       )
-      .catch((error) => {
-        throw new IamportSubscribeError(error.message);
+      .catch((err) => {
+        if (err.response || err.response.status === 401) {
+          throw new IamportAuthorizeError(err.message);
+        }
+
+        throw new IamportUnknownError(err.message);
       });
 
     const { data } = response;
-    if (data.code !== 0) {
-      throw new IamportSubscribeError(data.message);
-    }
+    return data;
+  }
 
+  async purchase(reqDto: IamportPurchaseRequestDto) {
+    const options = await this.getAuthenticatedAxiosOptions();
+    const response = await axios
+      .post<IamportPurchaseResponseDto>(
+        'subscribe/payments/again',
+        reqDto,
+        options,
+      )
+      .catch((err) => {
+        if (err.response || err.response.status === 401) {
+          throw new IamportAuthorizeError(err.message);
+        }
+
+        throw new IamportUnknownError(err.message);
+      });
+
+    const { data } = response;
+    return data;
+  }
+
+  async cancel(reqDto: IamportCancelRequestDto) {
+    const options = await this.getAuthenticatedAxiosOptions();
+    const response = await axios
+      .post<IamportCancelResponseDto>('/payments/cancel', reqDto, options)
+      .catch((err) => {
+        if (err.response || err.response.status === 401) {
+          throw new IamportAuthorizeError(err.message);
+        }
+
+        throw new IamportUnknownError(err.message);
+      });
+
+    const { data } = response;
     return data;
   }
 
