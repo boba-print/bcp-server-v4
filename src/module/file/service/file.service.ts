@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { NotFoundError } from 'src/common/error';
 import { PrismaService } from 'src/service/prisma.service';
 
 @Injectable()
@@ -14,7 +15,7 @@ export class FileService {
     });
 
     if (!result) {
-      throw new NotFoundException('not found!!');
+      throw new NotFoundError('not found!!');
     }
 
     const file = await this.prismaService.files.update({

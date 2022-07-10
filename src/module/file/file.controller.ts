@@ -4,14 +4,13 @@ import {
   Delete,
   Get,
   HttpException,
-  NotFoundException,
   Param,
   Patch,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { NotFoundError } from 'src/common/error';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
 import { UpdateFileDto } from './dto/UpdateFile.dto';
@@ -34,7 +33,7 @@ export class FileController {
     });
 
     if (!files.length) {
-      throw new NotFoundException('not found!!');
+      throw new NotFoundError('not found!!');
     }
 
     return files;
