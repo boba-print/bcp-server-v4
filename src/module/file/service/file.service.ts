@@ -63,16 +63,22 @@ export class FileService {
       select: {
         FilesConverted: {
           select: {
-            ThumbnailsGSPath: true,
+            ConvertedFileGSPath: true,
           },
         },
       },
     });
     if (!files) {
-      throw new NotFoundError('File Not Found!!');
+      throw new NotFoundError('file not found!!');
     }
-    const imageURLs = files.map(
-      (file) => file.FilesConverted?.ThumbnailsGSPath,
+    const ConvertedFileGSPathes = files.map((file) =>
+      file.FilesConverted
+        ? file.FilesConverted.ConvertedFileGSPath.slice(4)
+        : null,
+    );
+    const imageURLs = ConvertedFileGSPathes.map(
+      (ConvertedFileGSPath) =>
+        `https://storage.googleapis.com${ConvertedFileGSPath}`,
     );
     return imageURLs;
   }
