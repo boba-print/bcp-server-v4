@@ -6,6 +6,7 @@ import {
   HttpException,
   Param,
   Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -13,6 +14,7 @@ import { validate } from 'class-validator';
 import { NotFoundError } from 'src/common/error';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
+import { GetUploadToken } from './dto/getUploadToken.dto';
 import { UpdateFileDto } from './dto/UpdateFile.dto';
 import { FileService } from './service/file.service';
 
@@ -50,8 +52,25 @@ export class FileController {
         IsDeleted: 0,
       },
     });
-
     return file;
+  }
+
+  @Post('files/get-upload-token')
+  @UseGuards(UserAuthGuard)
+  async getUploadToken(@Param('userId') userId: string, @Body() body: any) {
+    const dto = plainToInstance(GetUploadToken, body);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new HttpException(errors[0].toString(), 400);
+    }
+
+    const { type } = dto;
+    if (type !== 'jpg' && type !== 'pdf') {
+      throw new HttpException('Bad request', 409);
+    }
+
+    const token = await this.fileService.generateUploadToken(userId, type);
+    return token;
   }
 
   @Patch('files/:fileId')

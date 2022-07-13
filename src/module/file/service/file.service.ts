@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import * as admin from 'firebase-admin';
 import { NotFoundError } from 'src/common/error';
 import { PrismaService } from 'src/service/prisma.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class FileService {
@@ -29,5 +31,30 @@ export class FileService {
     });
 
     return file;
+  }
+
+  async generateUploadToken(userId: string, type: string) {
+    const user = await this.prismaService.users.findUnique({
+      where: {
+        UserID: userId,
+      },
+    });
+    if (!user) {
+      throw new NotFoundError('User Not Found!!');
+    }
+    const userStorageSize =
+      user.StorageAllocated < 0 ? 0 : user.StorageAllocated;
+    const storageLeftInByte = userStorageSize - user.StorageUsed;
+    const uploadPath = await this.makeUploadPath(type, userId);
+    const payload = {
+      uploadPath,
+      storageLeftInByte,
+    };
+    const token = await admin.auth().createCustomToken(userId, payload);
+    return token;
+  }
+
+  private async makeUploadPath(ext: string, userId: string) {
+    return `original/${userId}/${uuidv4()}.${ext}`;
   }
 }
