@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   NotFoundException,
@@ -102,6 +103,32 @@ export class CardController {
     if (!cards) {
       throw new NotFoundException('Cards Not Found!!');
     }
+
+    return card;
+  }
+
+  @Delete('cards/:cardId')
+  @UseGuards(UserAuthGuard)
+  async remove(@Param() params) {
+    const result = await this.prismaService.cards.findFirst({
+      where: {
+        UserID: params.userId,
+        CardID: params.cardId,
+      },
+    });
+
+    if (!result) {
+      throw new HttpException('Card Info Conflict!!!', 409);
+    }
+
+    const card = await this.prismaService.cards.update({
+      where: {
+        CardID: params.userId,
+      },
+      data: {
+        IsDeleted: 1,
+      },
+    });
 
     return card;
   }
