@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { NotFoundError } from 'src/common/error';
 import { PrismaService } from 'src/service/prisma.service';
@@ -52,6 +52,29 @@ export class FileService {
     };
     const token = await admin.auth().createCustomToken(userId, payload);
     return token;
+  }
+
+  async getImageURLs(userId: string) {
+    const files = await this.prismaService.files.findMany({
+      where: {
+        UserID: userId,
+        IsDeleted: 0,
+      },
+      select: {
+        FilesConverted: {
+          select: {
+            ThumbnailsGSPath: true,
+          },
+        },
+      },
+    });
+    if (!files) {
+      throw new NotFoundError('File Not Found!!');
+    }
+    const imageURLs = files.map(
+      (file) => file.FilesConverted?.ThumbnailsGSPath,
+    );
+    return imageURLs;
   }
 
   private async makeUploadPath(ext: string, userId: string) {

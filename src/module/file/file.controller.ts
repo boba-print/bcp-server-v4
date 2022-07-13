@@ -42,6 +42,13 @@ export class FileController {
     return files;
   }
 
+  @Get('files/images')
+  @UseGuards(UserAuthGuard)
+  async findImages(@Param('userId') userId: string) {
+    const imageURLs = await this.fileService.getImageURLs(userId);
+    return imageURLs;
+  }
+
   @Get('files/:fileId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {
