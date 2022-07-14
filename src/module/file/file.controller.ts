@@ -54,9 +54,10 @@ export class FileController {
     return token;
   }
 
-  @Get('files/:fileId/images')
+  @Get('files/images')
   @UseGuards(UserAuthGuard)
   async getFileImages(
+    @Param('userId') userId: string,
     @Query('prefix') prefix: string,
     @Query('start') start: string,
     @Query('end') end: string,
@@ -69,10 +70,17 @@ export class FileController {
       console.warn('[start] parsing number error, set to default 0');
       startDefault = 0;
     }
-    if (isNaN(endDefault)) {
-      console.warn('[end] parsing number error, set to default 1');
-      endDefault = 1;
+
+    const result = await this.prismaService.filesConverted.findFirst({
+      where: {
+        ThumbnailsGSPath: prefix,
+        UserID: userId,
+      },
+    });
+    if (!result) {
+      throw new HttpException('Prefix info conflict', 409);
     }
+
     const signedURLs = await this.fileService.getSignedURL(
       prefix,
       startDefault,
