@@ -89,6 +89,14 @@ export class UserController {
     const { user } = req;
 
     let numLimit: number;
+    numLimit = parseInt(n);
+    if (isNaN(numLimit)) {
+      console.warn(
+        '[AlarmController.getRecent] parsing number error, set to default 10',
+      );
+      numLimit = 10;
+    }
+    /*
     try {
       numLimit = parseInt(n);
     } catch (err) {
@@ -97,6 +105,7 @@ export class UserController {
       );
       numLimit = 10;
     }
+    */
     return this.alarmService.getAlarms(user, numLimit);
   }
 

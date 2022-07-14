@@ -14,6 +14,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { NotFoundError } from 'src/common/error';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
+import { UserAuthRequest } from 'src/common/interface/UserAuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
 import { GetUploadToken } from './dto/getUploadToken.dto';
 import { UpdateFileDto } from './dto/UpdateFile.dto';
@@ -45,7 +46,10 @@ export class FileController {
 
   @Get('files/upload-token')
   @UseGuards(UserAuthGuard)
-  async getUploadToken(@Req() req, @Query('uploadPath') uploadPath: URL) {
+  async getUploadToken(
+    @Req() req: UserAuthRequest,
+    @Query('uploadPath') uploadPath: URL,
+  ) {
     const user = req.user;
     const token = await this.fileService.generateUploadToken(user, uploadPath);
     return token;
