@@ -51,6 +51,22 @@ export class FileController {
     return token;
   }
 
+  @Get('files/:fileId/images')
+  @UseGuards(UserAuthGuard)
+  async getFileImages(@Param() params) {
+    const result = await this.prismaService.files.findFirst({
+      where: {
+        UserID: params.userId,
+        FileID: params.fileId,
+      },
+    });
+    if (!result) {
+      throw new HttpException('File info conflict', 409);
+    }
+    const signedURLs = await this.fileService.getSignedURL(params.fileId);
+    return signedURLs;
+  }
+
   @Get('files/:fileId')
   @UseGuards(UserAuthGuard)
   async findOne(@Param() params) {

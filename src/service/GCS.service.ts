@@ -27,7 +27,7 @@ export class GCSService {
     const file = bucket.file(this.name(gsUrl));
     const response = await file.getSignedUrl({
       action: 'read',
-      expires: Date.now() + 1000 * 60 * 60,
+      expires: Date.now() + 1000 * 60 * 60 * 15,
     });
     return response[0];
   }
