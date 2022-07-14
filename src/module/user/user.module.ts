@@ -7,6 +7,7 @@ import { NaverSmsService } from '../auth/service/naver-sms.service';
 import { UserService } from './service/user.service';
 import { PrintOrderService } from './service/print-order.service';
 import { AlarmService } from './service/alarm.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   controllers: [UserController],
@@ -15,10 +16,9 @@ import { AlarmService } from './service/alarm.service';
     PrismaService,
     PrintOrderService,
     // TODO: Auth 모듈을 한번에 불러올수는 없을까?
-    PhoneAuthSessionService,
-    NaverSmsService,
     AlarmService,
   ],
+  imports: [AuthModule],
 })
 export class UserModule {
   configure(consumer: MiddlewareConsumer) {
