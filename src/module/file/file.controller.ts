@@ -6,7 +6,8 @@ import {
   HttpException,
   Param,
   Patch,
-  Post,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -42,11 +43,12 @@ export class FileController {
     return files;
   }
 
-  @Get('files/images')
+  @Get('files/upload-token')
   @UseGuards(UserAuthGuard)
-  async findImages(@Param('userId') userId: string) {
-    const imageURLs = await this.fileService.getImageURLs(userId);
-    return imageURLs;
+  async getUploadToken(@Req() req, @Query('uploadPath') uploadPath: URL) {
+    const user = req.user;
+    const token = await this.fileService.generateUploadToken(user, uploadPath);
+    return token;
   }
 
   @Get('files/:fileId')
@@ -60,24 +62,6 @@ export class FileController {
       },
     });
     return file;
-  }
-
-  @Post('files/get-upload-token')
-  @UseGuards(UserAuthGuard)
-  async getUploadToken(@Param('userId') userId: string, @Body() body: any) {
-    const dto = plainToInstance(GetUploadToken, body);
-    const errors = await validate(dto);
-    if (errors.length > 0) {
-      throw new HttpException(errors[0].toString(), 400);
-    }
-
-    const { type } = dto;
-    if (type !== 'jpg' && type !== 'pdf') {
-      throw new HttpException('Bad request', 409);
-    }
-
-    const token = await this.fileService.generateUploadToken(userId, type);
-    return token;
   }
 
   @Patch('files/:fileId')

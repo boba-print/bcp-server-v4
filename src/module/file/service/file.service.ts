@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { Users } from '@prisma/client';
 import * as admin from 'firebase-admin';
 import { NotFoundError } from 'src/common/error';
+import { GCSService } from 'src/service/GCS.service';
 import { PrismaService } from 'src/service/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class FileService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly gcsService: GCSService,
+  ) {}
 
   async update(params: any, name: string) {
     const result = await this.prismaService.files.findFirst({
@@ -33,57 +38,20 @@ export class FileService {
     return file;
   }
 
-  async generateUploadToken(userId: string, type: string) {
-    const user = await this.prismaService.users.findUnique({
-      where: {
-        UserID: userId,
-      },
-    });
-    if (!user) {
-      throw new NotFoundError('User Not Found!!');
+  async generateUploadToken(user: Users, uploadPath: URL) {
+    const uploadFilePath = new URL(uploadPath + '/rendering.0.100.o.jpg');
+    const result = await this.gcsService.isExist(uploadFilePath);
+    if (result[0]) {
+      return;
     }
     const userStorageSize =
       user.StorageAllocated < 0 ? 0 : user.StorageAllocated;
     const storageLeftInByte = userStorageSize - user.StorageUsed;
-    const uploadPath = await this.makeUploadPath(type, userId);
     const payload = {
       uploadPath,
       storageLeftInByte,
     };
-    const token = await admin.auth().createCustomToken(userId, payload);
+    const token = await admin.auth().createCustomToken(user.UserID, payload);
     return token;
-  }
-
-  async getImageURLs(userId: string) {
-    const files = await this.prismaService.files.findMany({
-      where: {
-        UserID: userId,
-        IsDeleted: 0,
-      },
-      select: {
-        FilesConverted: {
-          select: {
-            ConvertedFileGSPath: true,
-          },
-        },
-      },
-    });
-    if (!files) {
-      throw new NotFoundError('file not found!!');
-    }
-    const ConvertedFileGSPathes = files.map((file) =>
-      file.FilesConverted
-        ? file.FilesConverted.ConvertedFileGSPath.slice(4)
-        : null,
-    );
-    const imageURLs = ConvertedFileGSPathes.map(
-      (ConvertedFileGSPath) =>
-        `https://storage.googleapis.com${ConvertedFileGSPath}`,
-    );
-    return imageURLs;
-  }
-
-  private async makeUploadPath(ext: string, userId: string) {
-    return `original/${userId}/${uuidv4()}.${ext}`;
   }
 }
