@@ -38,22 +38,10 @@ export class FileService {
     return file;
   }
 
-  async getSignedURL(fileId: string) {
-    const file = await this.prismaService.files.findUnique({
-      where: {
-        FileID: fileId,
-      },
-      include: {
-        FilesConverted: true,
-      },
-    });
-    if (!file?.FilesConverted) {
-      throw new NotFoundError('file not found!!');
-    }
-    const numPages = file.FilesConverted.NumPages;
-    const thumnailURL = file.FilesConverted.ThumbnailsGSPath;
+  async getSignedURL(prefix: string, start: number, end: number) {
+    const thumnailURL = prefix;
     let signedURLs = {};
-    for (let i = 0; i < numPages; i++) {
+    for (let i = start; i < end; i++) {
       const uploadFilePath = new URL(thumnailURL + `/rendering.${i}.100.o.jpg`);
       const signedURL = await this.gcsService.getObjectUrl(uploadFilePath);
       signedURLs[i] = signedURL;

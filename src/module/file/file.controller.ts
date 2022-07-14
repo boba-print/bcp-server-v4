@@ -53,17 +53,28 @@ export class FileController {
 
   @Get('files/:fileId/images')
   @UseGuards(UserAuthGuard)
-  async getFileImages(@Param() params) {
-    const result = await this.prismaService.files.findFirst({
-      where: {
-        UserID: params.userId,
-        FileID: params.fileId,
-      },
-    });
-    if (!result) {
-      throw new HttpException('File info conflict', 409);
+  async getFileImages(
+    @Query('prefix') prefix: string,
+    @Query('start') start: string,
+    @Query('end') end: string,
+  ) {
+    let startDefault: number;
+    let endDefault: number;
+    startDefault = parseInt(start);
+    endDefault = parseInt(end);
+    if (isNaN(startDefault)) {
+      console.warn('[start] parsing number error, set to default 0');
+      startDefault = 0;
     }
-    const signedURLs = await this.fileService.getSignedURL(params.fileId);
+    if (isNaN(endDefault)) {
+      console.warn('[end] parsing number error, set to default 1');
+      endDefault = 1;
+    }
+    const signedURLs = await this.fileService.getSignedURL(
+      prefix,
+      startDefault,
+      endDefault,
+    );
     return signedURLs;
   }
 
