@@ -16,7 +16,6 @@ import { NotFoundError } from 'src/common/error';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { UserAuthRequest } from 'src/common/interface/UserAuthRequest';
 import { PrismaService } from 'src/service/prisma.service';
-import { GetUploadToken } from './dto/getUploadToken.dto';
 import { UpdateFileDto } from './dto/UpdateFile.dto';
 import { FileService } from './service/file.service';
 
