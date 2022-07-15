@@ -94,7 +94,7 @@ export class FileController {
       },
     });
     if (!result) {
-      throw new HttpException('Prefix info conflict', 409);
+      throw new HttpException('unAuthorized', 403);
     }
 
     const signedURLs = await this.fileService.getSignedURL(
