@@ -40,20 +40,7 @@ export class FileService {
 
   async getSignedURL(prefix: string, start: number, end: number) {
     const thumnailURL = prefix;
-    if (isNaN(end)) {
-      const numPage = await this.prismaService.filesConverted.findFirst({
-        where: {
-          ThumbnailsGSPath: prefix,
-        },
-        select: {
-          NumPages: true,
-        },
-      });
-      if (!numPage) {
-        throw new NotFoundError('filesConverted not found!!');
-      }
-      end = numPage.NumPages - 1;
-    }
+
     let signedURLs = {};
     for (let i = start; i <= end; i++) {
       const uploadFilePath = new URL(thumnailURL + `/rendering.${i}.100.o.jpg`);

@@ -70,6 +70,22 @@ export class FileController {
       console.warn('[start] parsing number error, set to default 0');
       startDefault = 0;
     }
+    // endDefault의 경우 service에서 convertedFile의 numPages로 초기화가 됩니다. controller 에서 초기화되는 것이 옳은 것같아 옮깁니다.
+    // start = 0, end = 0 인 경우에만 한장만 출력됩니다.
+    if (isNaN(endDefault)) {
+      const numPage = await this.prismaService.filesConverted.findFirst({
+        where: {
+          ThumbnailsGSPath: prefix,
+        },
+        select: {
+          NumPages: true,
+        },
+      });
+      if (!numPage) {
+        throw new NotFoundError('filesConverted not found!!');
+      }
+      endDefault = numPage.NumPages - 1;
+    }
 
     const result = await this.prismaService.filesConverted.findFirst({
       where: {
