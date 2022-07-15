@@ -14,6 +14,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
+import { CardDto } from './dto/Card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
 @Controller('users/:userId/cards')
@@ -26,10 +27,24 @@ export class CardController {
     const cards = await this.prismaService.cards.findMany({
       where: {
         UserID: userId,
+        IsDeleted: 0,
       },
     });
-
-    return cards;
+    let cardsDto: CardDto[] = [];
+    for (const card of cards) {
+      const cardDto: CardDto = {
+        UserID: card.UserID,
+        CardID: card.CardID,
+        CreatedAt: card.CreatedAt,
+        ModifiedAt: card.ModifiedAt,
+        RejectionMessage: card.RejectionMessage,
+        MaskedNumber: card.MaskedNumber,
+        Priority: card.Priority,
+        VendorCode: card.VendorCode,
+      };
+      cardsDto.push(cardDto);
+    }
+    return cardsDto;
   }
 
   @Patch(':cardId')
@@ -45,6 +60,7 @@ export class CardController {
       where: {
         CardID: params.cardId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
     if (!result) {
@@ -73,6 +89,7 @@ export class CardController {
       where: {
         CardID: params.cardId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
     if (!result) {
@@ -94,6 +111,7 @@ export class CardController {
     const cards = await this.prismaService.cards.updateMany({
       where: {
         UserID: params.userId,
+        IsDeleted: 0,
         Priority: 0,
       },
       data: {
@@ -114,6 +132,7 @@ export class CardController {
       where: {
         UserID: params.userId,
         CardID: params.cardId,
+        IsDeleted: 0,
       },
     });
 
