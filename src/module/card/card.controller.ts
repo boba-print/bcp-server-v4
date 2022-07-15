@@ -33,14 +33,14 @@ export class CardController {
     let cardsDto: CardDto[] = [];
     for (const card of cards) {
       const cardDto: CardDto = {
-        UserID: card.UserID,
-        CardID: card.CardID,
-        CreatedAt: card.CreatedAt,
-        ModifiedAt: card.ModifiedAt,
-        RejectionMessage: card.RejectionMessage,
-        MaskedNumber: card.MaskedNumber,
-        Priority: card.Priority,
-        VendorCode: card.VendorCode,
+        userId: card.UserID,
+        cardId: card.CardID,
+        createdAt: card.CreatedAt,
+        modifiedAt: card.ModifiedAt,
+        rejectionMessage: card.RejectionMessage,
+        maskedNumber: card.MaskedNumber,
+        priority: card.Priority,
+        vendorCode: card.VendorCode,
       };
       cardsDto.push(cardDto);
     }
