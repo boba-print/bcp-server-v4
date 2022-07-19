@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   NotFoundException,
@@ -13,6 +14,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UserAuthGuard } from 'src/common/guard/UserAuth.guard';
 import { PrismaService } from 'src/service/prisma.service';
+import { CardDto } from './dto/Card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
 @Controller('users/:userId/cards')
@@ -25,10 +27,24 @@ export class CardController {
     const cards = await this.prismaService.cards.findMany({
       where: {
         UserID: userId,
+        IsDeleted: 0,
       },
     });
-
-    return cards;
+    let cardsDto: CardDto[] = [];
+    for (const card of cards) {
+      const cardDto: CardDto = {
+        userId: card.UserID,
+        cardId: card.CardID,
+        createdAt: card.CreatedAt,
+        modifiedAt: card.ModifiedAt,
+        rejectionMessage: card.RejectionMessage,
+        maskedNumber: card.MaskedNumber,
+        priority: card.Priority,
+        vendorCode: card.VendorCode,
+      };
+      cardsDto.push(cardDto);
+    }
+    return cardsDto;
   }
 
   @Patch(':cardId')
@@ -44,6 +60,7 @@ export class CardController {
       where: {
         CardID: params.cardId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
     if (!result) {
@@ -72,6 +89,7 @@ export class CardController {
       where: {
         CardID: params.cardId,
         UserID: params.userId,
+        IsDeleted: 0,
       },
     });
     if (!result) {
@@ -93,6 +111,7 @@ export class CardController {
     const cards = await this.prismaService.cards.updateMany({
       where: {
         UserID: params.userId,
+        IsDeleted: 0,
         Priority: 0,
       },
       data: {
@@ -102,6 +121,33 @@ export class CardController {
     if (!cards) {
       throw new NotFoundException('Cards Not Found!!');
     }
+
+    return card;
+  }
+
+  @Delete('cards/:cardId')
+  @UseGuards(UserAuthGuard)
+  async remove(@Param() params) {
+    const result = await this.prismaService.cards.findFirst({
+      where: {
+        UserID: params.userId,
+        CardID: params.cardId,
+        IsDeleted: 0,
+      },
+    });
+
+    if (!result) {
+      throw new HttpException('Card Info Conflict!!!', 409);
+    }
+
+    const card = await this.prismaService.cards.update({
+      where: {
+        CardID: params.userId,
+      },
+      data: {
+        IsDeleted: 1,
+      },
+    });
 
     return card;
   }

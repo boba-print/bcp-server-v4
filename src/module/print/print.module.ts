@@ -2,8 +2,8 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { PrismaService } from 'src/service/prisma.service';
 import { PrintController } from './controller/print.controller';
 import { KioskAuthMiddleware } from '../../common/middleware/kiosk-auth.middleware';
-import { GCSService } from '../kiosk/service/GCS.service';
 import { PrintOrderService } from './service/PrintOrder.service';
+import { GCSService } from 'src/service/GCS.service';
 
 @Module({
   controllers: [PrintController],

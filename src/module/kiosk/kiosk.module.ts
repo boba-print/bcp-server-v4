@@ -3,7 +3,7 @@ import { KioskAuthMiddleware } from '../../common/middleware/kiosk-auth.middlewa
 import { PrismaService } from 'src/service/prisma.service';
 import { KiosksController } from './controller/kiosk.controller';
 import { PrintController } from '../print/controller/print.controller';
-import { GCSService } from './service/GCS.service';
+import { GCSService } from 'src/service/GCS.service';
 
 @Module({
   controllers: [KiosksController],

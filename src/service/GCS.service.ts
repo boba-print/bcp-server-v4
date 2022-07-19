@@ -6,11 +6,20 @@ export class GCSService {
   private storage = new Storage();
 
   bucket(gsUrl: URL) {
-    return gsUrl.hostname;
+    const url = new URL(gsUrl);
+    return url.hostname;
   }
 
   name(gsUrl: URL) {
-    return gsUrl.pathname.slice(1);
+    const url = new URL(gsUrl);
+    return url.pathname.slice(1);
+  }
+
+  async isExist(gsUrl: URL) {
+    const bucket = this.storage.bucket(this.bucket(gsUrl));
+    const file = bucket.file(this.name(gsUrl));
+    const result = await file.exists();
+    return result;
   }
 
   async getObjectUrl(gsUrl: URL) {
@@ -18,7 +27,7 @@ export class GCSService {
     const file = bucket.file(this.name(gsUrl));
     const response = await file.getSignedUrl({
       action: 'read',
-      expires: Date.now() + 1000 * 60 * 60,
+      expires: Date.now() + 1000 * 60 * 60 * 15,
     });
     return response[0];
   }
@@ -29,6 +38,7 @@ export class GCSService {
     const files = await bucket.getFiles({
       prefix: this.name(gsUrl),
     });
+    console.log(files[0]);
 
     return files[0].map((file) => {
       const gsPath = `gs://${file.bucket.name}/${file.name}`;
