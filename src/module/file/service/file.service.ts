@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Users } from '@prisma/client';
 import * as admin from 'firebase-admin';
-import { NotFoundError } from 'src/common/error';
+import { ConflictError, NotFoundError } from 'src/common/error';
 import { GCSService } from 'src/service/GCS.service';
 import { PrismaService } from 'src/service/prisma.service';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class FileService {
@@ -55,7 +54,7 @@ export class FileService {
     const uploadFilePath = new URL(uploadPath + '/rendering.0.100.o.jpg');
     const result = await this.gcsService.isExist(uploadFilePath);
     if (result[0]) {
-      return;
+      throw new ConflictError('Uploaded File Info Conflicted!!!');
     }
     const userStorageSize =
       user.StorageAllocated < 0 ? 0 : user.StorageAllocated;
