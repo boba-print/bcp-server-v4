@@ -10,9 +10,9 @@ import { KioskAuthRequest } from 'src/common/interface/KioskAuthRequest';
 import { KioskEntity } from 'src/domain/Kiosk/Kiosk.entity';
 import { PrintJobEntity } from 'src/domain/PrintJob/PrintJob.entity';
 import { UserEntity } from 'src/domain/User/User.entity';
+import { GCSService } from 'src/service/GCS.service';
 import { PrismaService } from 'src/service/prisma.service';
 import { CardPaymentFailedError } from '../../kiosk/errors';
-import { GCSService } from '../../kiosk/service/GCS.service';
 import { PrintOrderService } from '../service/PrintOrder.service';
 
 // TODO: use guards
