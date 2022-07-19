@@ -40,7 +40,7 @@ export class FileService {
   async getSignedURL(prefix: string, start: number, end: number) {
     const thumnailURL = prefix;
 
-    let signedURLs = {};
+    const signedURLs = {};
     for (let i = start; i <= end; i++) {
       const uploadFilePath = new URL(thumnailURL + `/rendering.${i}.100.o.jpg`);
       const signedURL = await this.gcsService.getObjectUrl(uploadFilePath);

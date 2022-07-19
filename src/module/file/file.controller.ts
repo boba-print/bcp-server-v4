@@ -82,11 +82,10 @@ export class FileController {
         },
       });
       if (!numPage) {
-        throw new NotFoundError('filesConverted not found!!');
+        throw new HttpException('Not Found!!', 404);
       }
       endDefault = numPage.NumPages - 1;
     }
-
     const result = await this.prismaService.filesConverted.findFirst({
       where: {
         ThumbnailsGSPath: prefix,
